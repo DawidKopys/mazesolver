@@ -66,9 +66,20 @@ class Mazesolver_GUI:
 
         self.b_draw_maze.focus()
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
-        self.parent_root.bind('<Double-Button-1>', lambda e: print('Press on [{},{}]'.format(e.x, e.y)))
+        self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
 
-    # def /
+    def find_closest_cell(self, event):
+        cells_centres_x = [cell[0] for cell in self.cells_centres_flat]
+        cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
+        # print(cells_centres_x)
+        print('Press on [{},{}]'.format(event.x, event.y))
+        # jak to działa
+        cell_x = min(cells_centres_x, key=lambda x:abs(x-event.x))
+        cell_y = min(cells_centres_y, key=lambda x:abs(x-event.y))
+        print('Closest x: {}'.format(cell_x))
+        print('Closest y: {}'.format(cell_y))
+        cell_ind = self.cells_centres_flat.index([cell_x, cell_y]) + 1
+        print('Closest cell: {}'.format(cell_ind))
 
     def print_border(self):
         #canvas.create_line(x0, y0, x1, y1)
