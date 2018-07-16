@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk, filedialog
-from mazesolver_files import read_maze_layout, zerolistmaker
+from mazesolver_files import read_maze_layout, zerolistmaker, all_children
 
 import time
 
@@ -18,7 +18,8 @@ class Mazesolver_GUI:
         self.grid_width  = 1
         self.walls_width = 9
         self.points_list = []
-        self.walls_printed = []
+        # self.walls_printed = [zerolistmaker(4)]*(self.nr_of_cells*self.nr_of_cells)
+        self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
 
         self.parent_root = parent_root
 
@@ -87,7 +88,12 @@ class Mazesolver_GUI:
             else:
                 wall_side = N
 
-        self.print_wall(cell_ind, side=wall_side)
+        if self.is_wall_present(cell_ind, side=wall_side) == True:
+            # self.destroy_wall(cell_ind, side=wall_side)
+            pass
+        else:
+            self.print_wall(cell_ind, side=wall_side)
+
 
     def print_border(self):
         #canvas.create_line(x0, y0, x1, y1)
@@ -201,31 +207,119 @@ class Mazesolver_GUI:
 
     # funkcja rysująca ściany wskazane przez parametr side w komórce o numerze number
     def print_wall(self, number, **option):
+        side_s = option.get('side')
+
         cell_x = self.cells_centres_flat[number-1][0]
         cell_y = self.cells_centres_flat[number-1][1]
-        walls_ids = []
+
+        if N in side_s:
+            if self.is_wall_present(number, side=N) == 0:
+                self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
+
+        if E in side_s:
+            if self.is_wall_present(number, side=E) == 0:
+                self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
+
+        if S in side_s:
+            if self.is_wall_present(number, side=S) == 0:
+                self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
+
+        if W in side_s:
+            if self.is_wall_present(number, side=W) == 0:
+                self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
+
+
+        # walls_printed - lista list w formacie [[N, E, S, W, cell_number], ...]
+        # self.walls_printed.append(walls_ids)
+
+        # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
+        print('print_wall: cell {}: {}\n'.format(number-1, self.walls_printed[number-1]))
+
+
+
+    # funkcja usuwająca ściany wskazane przez parametr side w komórce o numerze number
+    def destroy_wall(self, number, **option):
+        ind = number - 1
 
         if N in option.get('side'):
-            walls_ids.append(self.print_wall_N(cell_x, cell_y))
-        else:
-            walls_ids.append(0)
+            wall_ind = self.walls_printed[ind][0]
+            self.walls_printed[ind][0] = 0
+            self.canvas.delete(wall_ind)
         if E in option.get('side'):
-            walls_ids.append(self.print_wall_E(cell_x, cell_y))
-        else:
-            walls_ids.append(0)
+            wall_ind = self.walls_printed[ind][1]
+            self.walls_printed[ind][1] = 0
+            self.canvas.delete(wall_ind)
         if S in option.get('side'):
-            walls_ids.append(self.print_wall_S(cell_x, cell_y))
-        else:
-            walls_ids.append(0)
+            wall_ind = self.walls_printed[ind][2]
+            self.walls_printed[ind][2] = 0
+            self.canvas.delete(wall_ind)
         if W in option.get('side'):
-            walls_ids.append(self.print_wall_W(cell_x, cell_y,))
+            wall_ind = self.walls_printed[ind][3]
+            self.walls_printed[ind][3] = 0
+            self.canvas.delete(wall_ind)
+
+        print('destroy_wall: cell {}: {}'.format(number-1, self.walls_printed[number-1]))
+
+        # self.destroy_wall_neighbour(number, side=option.get('side'))
+
+    # funkcja usuwająca ściany w sąsiedniej komórce wskazanej przez number
+    def destroy_wall_neighbour(self, number, **option):
+        ind = number - 1
+        print('destroy_wall_neighbour, number = {}, side ={}, ind = {}'.format(number, option.get('side'), ind))
+
+        if N in option.get('side'):
+            wall_ind = self.walls_printed[ind-1][0]
+            self.walls_printed[ind-1][0] = 0
+            print('ind_inside = {}'.format(ind-1))
+            self.canvas.delete(wall_ind)
+
+        if E in option.get('side'):
+            wall_ind = self.walls_printed[ind+self.nr_of_cells][1]
+            self.walls_printed[ind+self.nr_of_cells][1] = 0
+            print('ind_inside = {}'.format(ind+self.nr_of_cells))
+            self.canvas.delete(wall_ind)
+
+        if S in option.get('side'):
+            wall_ind = self.walls_printed[ind+1][2]
+            self.walls_printed[ind+1][2] = 0
+            print('ind_inside = {}'.format(ind+1))
+            self.canvas.delete(wall_ind)
+
+        if W in option.get('side'):
+            wall_ind = self.walls_printed[ind-self.nr_of_cells][3]
+            self.walls_printed[ind-self.nr_of_cells][3] = 0
+            print('ind_inside = {}'.format(ind-self.nr_of_cells))
+            self.canvas.delete(wall_ind)
+
+
+    def is_wall_present(self, number, **option):
+        side_s = option.get('side')
+
+        if N == side_s:
+            wall_ind = 0
+            wall_ind_neigh = 2
+            ind_neigh = number-1 - 1
+        if E == side_s:
+            wall_ind = 1
+            wall_ind_neigh = 3
+            ind_neigh = number-1 + self.nr_of_cells
+        if S == side_s:
+            wall_ind = 2
+            wall_ind_neigh = 0
+            ind_neigh = number-1 + 1
+        if W == side_s:
+            wall_ind = 3
+            wall_ind_neigh = 1
+            ind_neigh = number-1 - self.nr_of_cells
+
+        print('self.walls_printed[{}][{}] = {}'.format(ind_neigh, wall_ind_neigh, self.walls_printed[ind_neigh][wall_ind_neigh]))
+        print('self.walls_printed[{}][{}] = {}'.format(number-1, wall_ind, self.walls_printed[number-1][wall_ind]))
+        if self.walls_printed[number-1][wall_ind] == 0 and self.walls_printed[ind_neigh][wall_ind_neigh] == 0:
+            print('is_wall_present: Not present')
+            return False
         else:
-            walls_ids.append(0)
-
-        walls_ids.append(number)
-
-        # walls_printed - lista list w formacie [[N, E, S, W, cell_number]]
-        self.walls_printed.append(walls_ids)
+            print('is_wall_present: Present')
+            return True
 
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
     # dodatkowy argument - rodzaj eventu jaki go wywołał
@@ -261,11 +355,12 @@ class Mazesolver_GUI:
 
     def clear_maze_layout(self):
         for cell in self.walls_printed:
-            print(cell)
             for wall in cell:
-                self.canvas.delete(wall)
+                if wall != 0:
+                    self.canvas.delete(wall)
 
-        self.walls_printed = []
+        self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+
 
 
 
