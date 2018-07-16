@@ -89,7 +89,7 @@ class Mazesolver_GUI:
                 wall_side = N
 
         if self.is_wall_present(cell_ind, side=wall_side) == True:
-            # self.destroy_wall(cell_ind, side=wall_side)
+            self.destroy_wall(cell_ind, side=wall_side)
             pass
         else:
             self.print_wall(cell_ind, side=wall_side)
@@ -233,32 +233,58 @@ class Mazesolver_GUI:
         # self.walls_printed.append(walls_ids)
 
         # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
-        print('print_wall: cell {}: {}\n'.format(number-1, self.walls_printed[number-1]))
+        print('print_wall: cell {}: {}\n'.format(number, self.walls_printed[number-1]))
 
 
 
     # funkcja usuwająca ściany wskazane przez parametr side w komórce o numerze number
     def destroy_wall(self, number, **option):
-        ind = number - 1
+        ind = number-1
 
         if N in option.get('side'):
             wall_ind = self.walls_printed[ind][0]
             self.walls_printed[ind][0] = 0
             self.canvas.delete(wall_ind)
+
+            ind_neigh = number-1 - 1
+            line_ind = self.walls_printed[ind_neigh][2]
+            self.walls_printed[ind_neigh][2] = 0
+            self.canvas.delete(line_ind)
+
         if E in option.get('side'):
             wall_ind = self.walls_printed[ind][1]
             self.walls_printed[ind][1] = 0
             self.canvas.delete(wall_ind)
+
+
+            ind_neigh = number-1 + self.nr_of_cells
+            line_ind = self.walls_printed[ind_neigh][3]
+            self.walls_printed[ind_neigh][3] = 0
+            self.canvas.delete(line_ind)
+
         if S in option.get('side'):
             wall_ind = self.walls_printed[ind][2]
             self.walls_printed[ind][2] = 0
             self.canvas.delete(wall_ind)
+
+
+            ind_neigh = number-1 + 1
+            line_ind = self.walls_printed[ind_neigh][0]
+            self.walls_printed[ind_neigh][0] = 0
+            self.canvas.delete(line_ind)
+
         if W in option.get('side'):
             wall_ind = self.walls_printed[ind][3]
             self.walls_printed[ind][3] = 0
             self.canvas.delete(wall_ind)
 
-        print('destroy_wall: cell {}: {}'.format(number-1, self.walls_printed[number-1]))
+            ind_neigh = number-1 - self.nr_of_cells
+            line_ind = self.walls_printed[ind_neigh][1]
+            self.walls_printed[ind_neigh][1] = 0
+            self.canvas.delete(line_ind)
+
+        print('destroy_wall: cell {}: {}'.format(number, self.walls_printed[number-1]))
+        print('destroy_wall: cell {}: {}'.format(ind_neigh+1, self.walls_printed[ind_neigh]))
 
         # self.destroy_wall_neighbour(number, side=option.get('side'))
 
@@ -362,26 +388,6 @@ class Mazesolver_GUI:
         self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
 
 
-
-
-i = 0
 root = Tk()
 mazesolver = Mazesolver_GUI(root)
-# print(mazesolver.cells_centres_flat)
-# mazesolver.print_wall(2, side=E)
-# mazesolver.print_wall(119, side=E+W)
-# mazesolver.print_wall(26, side=E+W+N+S)
-# print('mazesolver.walls_printed', mazesolver.walls_printed)
-
-
-# time = 1000
-# print('kakao')
-# for cell in mazesolver.walls_printed:
-#     print(cell[0])
-#     for line_id in cell[0]:
-#         print(line_id)
-#         time = time + 1000
-#         mazesolver.canvas.after(time, mazesolver.canvas.delete, line_id)
-# mazesolver.canvas.after(1000, mazesolver.canvas.delete, mazesolver.wall)
-i = i + 1
 root.mainloop()
