@@ -69,17 +69,32 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
 
     def find_closest_cell(self, event):
-        cells_centres_x = [cell[0] for cell in self.cells_centres_flat]
-        cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
-        # print(cells_centres_x)
         print('Press on [{},{}]'.format(event.x, event.y))
         # jak to działa
-        cell_x = min(cells_centres_x, key=lambda x:abs(x-event.x))
-        cell_y = min(cells_centres_y, key=lambda x:abs(x-event.y))
+        cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
+        cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
         print('Closest x: {}'.format(cell_x))
         print('Closest y: {}'.format(cell_y))
         cell_ind = self.cells_centres_flat.index([cell_x, cell_y]) + 1
         print('Closest cell: {}'.format(cell_ind))
+
+        x_diff = event.x - cell_x
+        print('event.x - cell_x = {} - {} = {} = x_diff'.format(event.x, cell_x, x_diff))
+        y_diff = event.y - cell_y
+        print('event.y - cell_y = {} - {} = {} = y_diff'.format(event.y, cell_y, y_diff))
+        if abs(x_diff) > abs(y_diff):
+            print('abs(x_diff) < abs(y_diff) bo abs({}) < abs({})'.format(x_diff, y_diff))
+            if x_diff > 0:
+                wall_side = E
+            else:
+                wall_side = W
+        else:
+            print('abs(x_diff) >= abs(y_diff) bo abs({}) >= abs({})'.format(x_diff, y_diff))
+            if y_diff > 0:
+                wall_side = S
+            else:
+                wall_side = N
+        print('Wall sde: {}'.format(wall_side))
 
     def print_border(self):
         #canvas.create_line(x0, y0, x1, y1)
@@ -130,6 +145,8 @@ class Mazesolver_GUI:
             for y in range(self.nr_of_cells):
                 self.cells_centres[x].append([int(x * self.step + self.offset + self.step / 2), int(y * self.step + self.offset + self.step/2)])
         self.cells_centres_flat = [col for row in self.cells_centres for col in row]
+        self.cells_centres_x = [cell[0] for cell in self.cells_centres_flat]
+        self.cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
 
     # funkcja rysująca numery wszystkich komórek
     # param:
