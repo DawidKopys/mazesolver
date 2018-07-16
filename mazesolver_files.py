@@ -6,3 +6,7 @@ def read_maze_layout(filename):
         return maze_layout
     except FileNotFoundError:
         pass
+
+def zerolistmaker(n):
+    listofzeros = [0] * n
+    return listofzeros
