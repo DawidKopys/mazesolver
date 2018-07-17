@@ -14,7 +14,11 @@ class Mazesolver_GUI:
 
     def __init__(self, parent_root):
         self.size        = 800
-        self.nr_of_cells = 4
+        self.nr_of_cells = 8
+        self.edge_list_S = [self.nr_of_cells*i for i in range(1, self.nr_of_cells+1)]
+        self.edge_list_N = [i-(self.nr_of_cells-1) for i in self.edge_list_S]
+        print(self.edge_list_S)
+        print(self.edge_list_N)
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
@@ -236,58 +240,63 @@ class Mazesolver_GUI:
         ind = number-1
 
         if N in option.get('side'):
-            wall_ind = self.walls_printed[ind][0]
-            self.walls_printed[ind][0] = 0
-            self.canvas.delete(wall_ind)
+            self.destroy_wall_single(ind=number-1, side=N)
+
             # zniszcz sciane w sasiedniej komórce
             ind_neigh = number-1 - 1
             try:
-                line_ind = self.walls_printed[ind_neigh][2]
-                self.walls_printed[ind_neigh][2] = 0
-                self.canvas.delete(line_ind)
+                self.destroy_wall_single(ind=ind_neigh, side=S)
             except IndexError:
                 pass
 
         if E in option.get('side'):
-            wall_ind = self.walls_printed[ind][1]
-            self.walls_printed[ind][1] = 0
-            self.canvas.delete(wall_ind)
-
+            self.destroy_wall_single(ind=number-1, side=E)
 
             ind_neigh = number-1 + self.nr_of_cells
             try:
-                line_ind = self.walls_printed[ind_neigh][3]
-                self.walls_printed[ind_neigh][3] = 0
-                self.canvas.delete(line_ind)
+                self.destroy_wall_single(ind=ind_neigh, side=W)
             except IndexError:
                 pass
 
         if S in option.get('side'):
-            wall_ind = self.walls_printed[ind][2]
-            self.walls_printed[ind][2] = 0
-            self.canvas.delete(wall_ind)
-
+            self.destroy_wall_single(ind=number-1, side=S)
 
             ind_neigh = number-1 + 1
             try:
-                line_ind = self.walls_printed[ind_neigh][0]
-                self.walls_printed[ind_neigh][0] = 0
-                self.canvas.delete(line_ind)
+                self.destroy_wall_single(ind=ind_neigh, side=N)
             except IndexError:
                 pass
 
         if W in option.get('side'):
-            wall_ind = self.walls_printed[ind][3]
-            self.walls_printed[ind][3] = 0
-            self.canvas.delete(wall_ind)
+            self.destroy_wall_single(ind=number-1, side=W)
 
             ind_neigh = number-1 - self.nr_of_cells
             try:
-                line_ind = self.walls_printed[ind_neigh][1]
-                self.walls_printed[ind_neigh][1] = 0
-                self.canvas.delete(line_ind)
+                self.destroy_wall_single(ind=ind_neigh, side=E)
             except IndexError:
                 pass
+
+    # funkcja usuwa JEDNĄ ścianę, UWAGA, tutaj arg to ind, nie number (patrz destroy_wall)
+    def destroy_wall_single(self, ind, side):
+        if len(side) != 1:
+            print('error, destroy_wall_single takes single direction argument (N or S or W or E)')
+        else:
+            if N == side:
+                wall_ind = self.walls_printed[ind][0]
+                self.walls_printed[ind][0] = 0
+                self.canvas.delete(wall_ind)
+            elif E == side:
+                wall_ind = self.walls_printed[ind][1]
+                self.walls_printed[ind][1] = 0
+                self.canvas.delete(wall_ind)
+            elif S == side:
+                wall_ind = self.walls_printed[ind][2]
+                self.walls_printed[ind][2] = 0
+                self.canvas.delete(wall_ind)
+            elif W == side:
+                wall_ind = self.walls_printed[ind][3]
+                self.walls_printed[ind][3] = 0
+                self.canvas.delete(wall_ind)
 
     def is_wall_present(self, number, **option):
         side_s = option.get('side')
@@ -318,8 +327,11 @@ class Mazesolver_GUI:
 
         print('curr_cell[{}] = {}, curr_cell_wall = {}'.format(number-1,
                                     self.walls_printed[number-1], curr_cell_wall))
-        print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
-                                    self.walls_printed[ind_neigh], neigh_cell_wall))
+        try:
+            print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
+                                        self.walls_printed[ind_neigh], neigh_cell_wall))
+        except IndexError:
+            pass
         if curr_cell_wall == 0 and neigh_cell_wall == 0:
             print('Not present\n')
             return False
