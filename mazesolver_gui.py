@@ -255,53 +255,45 @@ class Mazesolver_GUI:
     # funkcja usuwająca ściany wskazane przez parametr side w komórce o numerze number
     def destroy_wall(self, number, **option):
         ind = number-1
+        side = option.get('side')
 
-        if N in option.get('side'):
+        if N in side:
             self.destroy_wall_single(ind=number-1, side=N)
 
-            # zniszcz sciane w sasiedniej komórce
-            # if number not in self.edge_list_N:
-            #   print('{} not in self.edge_list_N {}'.format(number-1, self.edge_list_N))
-
-            ind_neigh = number-1 - 1
-            try:
-                self.destroy_wall_single(ind=ind_neigh, side=S)
-            except IndexError:
-                pass
-            # else:
-            #     print("we are on S edge")
-
-        if E in option.get('side'):
+            # zniszcz sciane w sasiedniej komórce (jesli nie jestesmy na krawedzi)
+            if not self.is_on_edge(number, side=N):
+                ind_neigh = number-1 - 1
+                try:
+                    self.destroy_wall_single(ind=ind_neigh, side=S)
+                except IndexError:
+                    pass
+        if E in side:
             self.destroy_wall_single(ind=number-1, side=E)
 
-            ind_neigh = number-1 + self.nr_of_cells
-            try:
-                self.destroy_wall_single(ind=ind_neigh, side=W)
-            except IndexError:
-                pass
-
-        if S in option.get('side'):
+            if not self.is_on_edge(number, side=E):
+                ind_neigh = number-1 + self.nr_of_cells
+                try:
+                    self.destroy_wall_single(ind=ind_neigh, side=W)
+                except IndexError:
+                    pass
+        if S in side:
             self.destroy_wall_single(ind=number-1, side=S)
 
-            # if number not in self.edge_list_S:
-            #     print('{} not in self.edge_list_S {}'.format(number, self.edge_list_S))
-            ind_neigh = number-1 + 1
-            try:
-                self.destroy_wall_single(ind=ind_neigh, side=N)
-            except IndexError:
-                pass
-            # else:
-            #     print("we are on N edge")
-
-
-        if W in option.get('side'):
+            if not self.is_on_edge(number, side=S):
+                ind_neigh = number-1 + 1
+                try:
+                    self.destroy_wall_single(ind=ind_neigh, side=N)
+                except IndexError:
+                    pass
+        if W in side:
             self.destroy_wall_single(ind=number-1, side=W)
 
-            ind_neigh = number-1 - self.nr_of_cells
-            try:
-                self.destroy_wall_single(ind=ind_neigh, side=E)
-            except IndexError:
-                pass
+            if not self.is_on_edge(number, side=W):
+                ind_neigh = number-1 - self.nr_of_cells
+                try:
+                    self.destroy_wall_single(ind=ind_neigh, side=E)
+                except IndexError:
+                    pass
 
     # funkcja usuwa JEDNĄ ścianę, UWAGA, tutaj arg to ind, nie number (patrz destroy_wall)
     def destroy_wall_single(self, ind, side):
@@ -366,8 +358,6 @@ class Mazesolver_GUI:
 
         print('curr_cell[{}] = {}, curr_cell_wall = {}'.format(number-1,
                                     self.walls_printed[number-1], curr_cell_wall))
-
-
 
         if cond:
             print('Not present\n')
