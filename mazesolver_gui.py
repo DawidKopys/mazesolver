@@ -311,17 +311,14 @@ class Mazesolver_GUI:
             wall_ind_neigh = 1
             ind_neigh = number-1 - self.nr_of_cells
 
-        curr_cell = self.walls_printed[number-1]
-        curr_wall = curr_cell[wall_ind]
+        curr_cell_wall = self.walls_printed[number-1][wall_ind]
 
         try:
-            neigh_cell = self.walls_printed[ind_neigh]
-            neigh_wall = neigh_cell[wall_ind_neigh]
+            neigh_cell_wall = self.walls_printed[ind_neigh][wall_ind_neigh]
         except IndexError:
-            neigh_wall = 0
+            neigh_cell_wall = 0
 
-        # if self.walls_printed[number-1][wall_ind] == 0 and self.walls_printed[ind_neigh][wall_ind_neigh] == 0:
-        if curr_wall == 0 and neigh_wall == 0:
+        if curr_cell_wall == 0 and neigh_cell_wall == 0:
             return False
         else:
             return True
