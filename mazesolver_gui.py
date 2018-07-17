@@ -4,6 +4,7 @@ from mazesolver_files import read_maze_layout, zerolistmaker, all_children
 
 import time
 
+# defines for print_cell_number()
 ALL = 'all'
 all = 'all'
 
@@ -13,12 +14,11 @@ class Mazesolver_GUI:
 
     def __init__(self, parent_root):
         self.size        = 800
-        self.nr_of_cells = 16
+        self.nr_of_cells = 4
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
         self.points_list = []
-        # self.walls_printed = [zerolistmaker(4)]*(self.nr_of_cells*self.nr_of_cells)
         self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
 
         self.parent_root = parent_root
@@ -69,6 +69,7 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
         self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
 
+    # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):
         # jak to działa
         cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
@@ -93,7 +94,6 @@ class Mazesolver_GUI:
             pass
         else:
             self.print_wall(cell_ind, side=wall_side)
-
 
     def print_border(self):
         #canvas.create_line(x0, y0, x1, y1)
@@ -231,8 +231,6 @@ class Mazesolver_GUI:
         # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
         # print('print_wall: cell {}: {}\n'.format(number, self.walls_printed[number-1]))
 
-
-
     # funkcja usuwająca ściany wskazane przez parametr side w komórce o numerze number
     def destroy_wall(self, number, **option):
         ind = number-1
@@ -241,7 +239,7 @@ class Mazesolver_GUI:
             wall_ind = self.walls_printed[ind][0]
             self.walls_printed[ind][0] = 0
             self.canvas.delete(wall_ind)
-
+            # zniszcz sciane w sasiedniej komórce
             ind_neigh = number-1 - 1
             try:
                 line_ind = self.walls_printed[ind_neigh][2]
@@ -318,9 +316,15 @@ class Mazesolver_GUI:
         except IndexError:
             neigh_cell_wall = 0
 
+        print('curr_cell[{}] = {}, curr_cell_wall = {}'.format(number-1,
+                                    self.walls_printed[number-1], curr_cell_wall))
+        print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
+                                    self.walls_printed[ind_neigh], neigh_cell_wall))
         if curr_cell_wall == 0 and neigh_cell_wall == 0:
+            print('Not present\n')
             return False
         else:
+            print('Present\n')
             return True
 
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
