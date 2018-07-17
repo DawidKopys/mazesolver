@@ -97,7 +97,7 @@ class Mazesolver_GUI:
             self.destroy_wall(cell_ind, side=wall_side)
             pass
         else:
-            self.print_wall(cell_ind, side=wall_side)
+            self.print_wall(cell_ind, side=wall_side, caller='double_press')
 
     def print_border(self):
         #canvas.create_line(x0, y0, x1, y1)
@@ -212,24 +212,37 @@ class Mazesolver_GUI:
     # funkcja rysująca ściany wskazane przez parametr side w komórce o numerze number
     def print_wall(self, number, **option):
         side_s = option.get('side')
+        caller = option.get('caller')
 
         cell_x = self.cells_centres_flat[number-1][0]
         cell_y = self.cells_centres_flat[number-1][1]
 
         if N in side_s:
-            if self.is_wall_present(number, side=N) == 0:
+            if caller == 'double_press':
+                if self.is_wall_present(number, side=N) == 0:
+                    self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
+            else:
                 self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
 
         if E in side_s:
-            if self.is_wall_present(number, side=E) == 0:
+            if caller == 'double_press':
+                if self.is_wall_present(number, side=E) == 0:
+                    self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
+            else:
                 self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
 
         if S in side_s:
-            if self.is_wall_present(number, side=S) == 0:
+            if caller == 'double_press':
+                if self.is_wall_present(number, side=S) == 0:
+                    self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
+            else:
                 self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
 
         if W in side_s:
-            if self.is_wall_present(number, side=W) == 0:
+            if caller == 'double_press':
+                if self.is_wall_present(number, side=W) == 0:
+                    self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
+            else:
                 self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
 
         # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
@@ -243,11 +256,16 @@ class Mazesolver_GUI:
             self.destroy_wall_single(ind=number-1, side=N)
 
             # zniszcz sciane w sasiedniej komórce
+            # if number not in self.edge_list_N:
+            #   print('{} not in self.edge_list_N {}'.format(number-1, self.edge_list_N))
+
             ind_neigh = number-1 - 1
             try:
                 self.destroy_wall_single(ind=ind_neigh, side=S)
             except IndexError:
                 pass
+            # else:
+            #     print("we are on S edge")
 
         if E in option.get('side'):
             self.destroy_wall_single(ind=number-1, side=E)
@@ -261,11 +279,16 @@ class Mazesolver_GUI:
         if S in option.get('side'):
             self.destroy_wall_single(ind=number-1, side=S)
 
+            # if number not in self.edge_list_S:
+            #     print('{} not in self.edge_list_S {}'.format(number, self.edge_list_S))
             ind_neigh = number-1 + 1
             try:
                 self.destroy_wall_single(ind=ind_neigh, side=N)
             except IndexError:
                 pass
+            # else:
+            #     print("we are on N edge")
+
 
         if W in option.get('side'):
             self.destroy_wall_single(ind=number-1, side=W)
