@@ -19,3 +19,32 @@ def all_children (wid) :
             _list.extend(item.winfo_children())
 
     return _list
+
+def prepare_maze_layout_list(maze_layout):
+    maze_layout_out = []
+    ind = 0
+    for cell in maze_layout:
+        maze_layout_out.append([])
+        for wall in cell:
+            if wall == 0:
+                maze_layout_out[ind].append(0)
+            else:
+                maze_layout_out[ind].append(1)
+        ind = ind + 1
+    return maze_layout_out
+
+def write_maze_layout(filename, prepared_maze_layout):
+    try:
+        with open(filename, 'w') as file_out:
+            for cell in prepared_maze_layout:
+                n_of_spaces = 0
+                for wall in cell:
+                    file_out.write(str(wall))
+                    if n_of_spaces < 3:
+                        file_out.write(' ')
+                    n_of_spaces = n_of_spaces + 1
+                n_of_spaces = 0
+                file_out.write('\n')
+
+    except FileNotFoundError:
+        print('write_maze_layout: FileNotFoundError')

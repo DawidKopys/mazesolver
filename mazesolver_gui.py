@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk, filedialog
-from mazesolver_files import read_maze_layout, zerolistmaker, all_children
+from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
 
 import time
 
@@ -65,9 +65,11 @@ class Mazesolver_GUI:
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
+        self.b_save_maze     = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_draw_maze.grid()
         self.b_clear_maze.grid()
         self.b_open_maze_file.grid()
+        self.b_save_maze.grid()
 
         self.print_outline()
         self.create_cells_points()
@@ -357,30 +359,17 @@ class Mazesolver_GUI:
         curr_cell_wall = self.walls_printed[number-1][wall_ind]
 
         if self.is_on_edge(number, side=side):
-            print('edge')
             cond = curr_cell_wall == 0
         else:
-            print('not edge')
             try:
                 neigh_cell_wall = self.walls_printed[ind_neigh][wall_ind_neigh]
             except IndexError:
                 neigh_cell_wall = 0
             cond = curr_cell_wall == 0 and neigh_cell_wall == 0
 
-            try:
-                print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
-                                            self.walls_printed[ind_neigh], neigh_cell_wall))
-            except IndexError:
-                pass
-
-        print('curr_cell[{}] = {}, curr_cell_wall = {}'.format(number-1,
-                                    self.walls_printed[number-1], curr_cell_wall))
-
         if cond:
-            print('Not present\n')
             return False
         else:
-            print('Present\n')
             return True
 
     def is_on_edge(self, number, side):
@@ -405,11 +394,13 @@ class Mazesolver_GUI:
             else:
                 return False
 
-
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
     # dodatkowy argument - rodzaj eventu jaki go wywołał
     def print_maze(self, event=0):
-        self.print_walls_border()
+
+        self.clear_maze_layout()
+
+        # self.print_walls_border()
         ind = 1
         side = ''
         for cell in self.mazelayout:
@@ -425,17 +416,18 @@ class Mazesolver_GUI:
             # print('mazelayout[{}] = {}, walls_printed = {}'.format(ind-1, self.mazelayout[ind-1], self.walls_printed[ind-1]))
             side = ''
             ind = ind + 1
-
+        print(prepare_maze_layout_list(self.walls_printed))
 
     def load_maze_layout(self):
         try:
             self.filename = filedialog.askopenfilename(initialdir = ".",title = "Select file",
-                                                    filetypes = (("text files","*.txt"),("all files","*.*")))
+                                filetypes = (("text files","*.txt"),("all files","*.*")))
             # wczytaj mapę labiryntu z pliku (do listy, patrz nagłówek pliku)
             self.mazelayout = read_maze_layout(self.filename)
             if self.filename != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
                 self.b_draw_maze.state(['!disabled'])
                 self.parent_root.bind('<Return>', self.print_maze)
+                print(self.mazelayout)
         except ValueError:
             print('ValueError file')
 
@@ -446,6 +438,11 @@ class Mazesolver_GUI:
                     self.canvas.delete(wall)
 
         self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+
+    def save_maze_layout(self):
+        self.filename_write = filedialog.askopenfilename(initialdir = ".",title = "Select file",
+                                filetypes = (("text files","*.txt"),("all files","*.*")))
+        write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
 
 
 root = Tk()
