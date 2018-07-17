@@ -223,29 +223,46 @@ class Mazesolver_GUI:
 
         if N in side_s:
             if caller == 'double_press':
-                if self.is_wall_present(number, side=N) == 0:
+                if not self.is_wall_present(number, side=N):
                     self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
+                if not self.is_on_edge(number, side=N):
+                    # jesli nie na krawedzi, narysuj tez sciane u sąsiada
+                    cell_x_neigh = self.cells_centres_flat[number-1-1][0]
+                    cell_y_neigh = self.cells_centres_flat[number-1-1][1]
+                    self.walls_printed[number-1-1][2] = self.print_wall_S(cell_x_neigh, cell_y_neigh)
             else:
                 self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
 
         if E in side_s:
             if caller == 'double_press':
-                if self.is_wall_present(number, side=E) == 0:
+                if not self.is_wall_present(number, side=E):
                     self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
+                if not self.is_on_edge(number, side=E):
+                    cell_x_neigh = self.cells_centres_flat[number-1+self.nr_of_cells][0]
+                    cell_y_neigh = self.cells_centres_flat[number-1+self.nr_of_cells][1]
+                    self.walls_printed[number-1+self.nr_of_cells][3] = self.print_wall_W(cell_x_neigh, cell_y_neigh)
             else:
                 self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
 
         if S in side_s:
             if caller == 'double_press':
-                if self.is_wall_present(number, side=S) == 0:
+                if not self.is_wall_present(number, side=S):
                     self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
+                if not self.is_on_edge(number, side=S):
+                    cell_x_neigh = self.cells_centres_flat[number-1+1][0]
+                    cell_y_neigh = self.cells_centres_flat[number-1+1][1]
+                    self.walls_printed[number-1+1][0] = self.print_wall_N(cell_x_neigh, cell_y_neigh)
             else:
                 self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
 
         if W in side_s:
             if caller == 'double_press':
-                if self.is_wall_present(number, side=W) == 0:
+                if not self.is_wall_present(number, side=W):
                     self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
+                if not self.is_on_edge(number, side=W):
+                    cell_x_neigh = self.cells_centres_flat[number-1-self.nr_of_cells][0]
+                    cell_y_neigh = self.cells_centres_flat[number-1-self.nr_of_cells][1]
+                    self.walls_printed[number-1-self.nr_of_cells][1] = self.print_wall_E(cell_x_neigh, cell_y_neigh)
             else:
                 self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
 
