@@ -228,12 +228,8 @@ class Mazesolver_GUI:
             if self.is_wall_present(number, side=W) == 0:
                 self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
 
-
-        # walls_printed - lista list w formacie [[N, E, S, W, cell_number], ...]
-        # self.walls_printed.append(walls_ids)
-
         # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
-        print('print_wall: cell {}: {}\n'.format(number, self.walls_printed[number-1]))
+        # print('print_wall: cell {}: {}\n'.format(number, self.walls_printed[number-1]))
 
 
 
@@ -247,9 +243,12 @@ class Mazesolver_GUI:
             self.canvas.delete(wall_ind)
 
             ind_neigh = number-1 - 1
-            line_ind = self.walls_printed[ind_neigh][2]
-            self.walls_printed[ind_neigh][2] = 0
-            self.canvas.delete(line_ind)
+            try:
+                line_ind = self.walls_printed[ind_neigh][2]
+                self.walls_printed[ind_neigh][2] = 0
+                self.canvas.delete(line_ind)
+            except IndexError:
+                pass
 
         if E in option.get('side'):
             wall_ind = self.walls_printed[ind][1]
@@ -258,9 +257,12 @@ class Mazesolver_GUI:
 
 
             ind_neigh = number-1 + self.nr_of_cells
-            line_ind = self.walls_printed[ind_neigh][3]
-            self.walls_printed[ind_neigh][3] = 0
-            self.canvas.delete(line_ind)
+            try:
+                line_ind = self.walls_printed[ind_neigh][3]
+                self.walls_printed[ind_neigh][3] = 0
+                self.canvas.delete(line_ind)
+            except IndexError:
+                pass
 
         if S in option.get('side'):
             wall_ind = self.walls_printed[ind][2]
@@ -269,9 +271,12 @@ class Mazesolver_GUI:
 
 
             ind_neigh = number-1 + 1
-            line_ind = self.walls_printed[ind_neigh][0]
-            self.walls_printed[ind_neigh][0] = 0
-            self.canvas.delete(line_ind)
+            try:
+                line_ind = self.walls_printed[ind_neigh][0]
+                self.walls_printed[ind_neigh][0] = 0
+                self.canvas.delete(line_ind)
+            except IndexError:
+                pass
 
         if W in option.get('side'):
             wall_ind = self.walls_printed[ind][3]
@@ -279,44 +284,12 @@ class Mazesolver_GUI:
             self.canvas.delete(wall_ind)
 
             ind_neigh = number-1 - self.nr_of_cells
-            line_ind = self.walls_printed[ind_neigh][1]
-            self.walls_printed[ind_neigh][1] = 0
-            self.canvas.delete(line_ind)
-
-        print('destroy_wall: cell {}: {}'.format(number, self.walls_printed[number-1]))
-        print('destroy_wall: cell {}: {}'.format(ind_neigh+1, self.walls_printed[ind_neigh]))
-
-        # self.destroy_wall_neighbour(number, side=option.get('side'))
-
-    # funkcja usuwająca ściany w sąsiedniej komórce wskazanej przez number
-    def destroy_wall_neighbour(self, number, **option):
-        ind = number - 1
-        print('destroy_wall_neighbour, number = {}, side ={}, ind = {}'.format(number, option.get('side'), ind))
-
-        if N in option.get('side'):
-            wall_ind = self.walls_printed[ind-1][0]
-            self.walls_printed[ind-1][0] = 0
-            print('ind_inside = {}'.format(ind-1))
-            self.canvas.delete(wall_ind)
-
-        if E in option.get('side'):
-            wall_ind = self.walls_printed[ind+self.nr_of_cells][1]
-            self.walls_printed[ind+self.nr_of_cells][1] = 0
-            print('ind_inside = {}'.format(ind+self.nr_of_cells))
-            self.canvas.delete(wall_ind)
-
-        if S in option.get('side'):
-            wall_ind = self.walls_printed[ind+1][2]
-            self.walls_printed[ind+1][2] = 0
-            print('ind_inside = {}'.format(ind+1))
-            self.canvas.delete(wall_ind)
-
-        if W in option.get('side'):
-            wall_ind = self.walls_printed[ind-self.nr_of_cells][3]
-            self.walls_printed[ind-self.nr_of_cells][3] = 0
-            print('ind_inside = {}'.format(ind-self.nr_of_cells))
-            self.canvas.delete(wall_ind)
-
+            try:
+                line_ind = self.walls_printed[ind_neigh][1]
+                self.walls_printed[ind_neigh][1] = 0
+                self.canvas.delete(line_ind)
+            except IndexError:
+                pass
 
     def is_wall_present(self, number, **option):
         side_s = option.get('side')
@@ -338,13 +311,19 @@ class Mazesolver_GUI:
             wall_ind_neigh = 1
             ind_neigh = number-1 - self.nr_of_cells
 
-        print('self.walls_printed[{}][{}] = {}'.format(ind_neigh, wall_ind_neigh, self.walls_printed[ind_neigh][wall_ind_neigh]))
-        print('self.walls_printed[{}][{}] = {}'.format(number-1, wall_ind, self.walls_printed[number-1][wall_ind]))
-        if self.walls_printed[number-1][wall_ind] == 0 and self.walls_printed[ind_neigh][wall_ind_neigh] == 0:
-            print('is_wall_present: Not present')
+        curr_cell = self.walls_printed[number-1]
+        curr_wall = curr_cell[wall_ind]
+
+        try:
+            neigh_cell = self.walls_printed[ind_neigh]
+            neigh_wall = neigh_cell[wall_ind_neigh]
+        except IndexError:
+            neigh_wall = 0
+
+        # if self.walls_printed[number-1][wall_ind] == 0 and self.walls_printed[ind_neigh][wall_ind_neigh] == 0:
+        if curr_wall == 0 and neigh_wall == 0:
             return False
         else:
-            print('is_wall_present: Present')
             return True
 
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
@@ -374,8 +353,9 @@ class Mazesolver_GUI:
                                                     filetypes = (("text files","*.txt"),("all files","*.*")))
             # wczytaj mapę labiryntu z pliku (do listy, patrz nagłówek pliku)
             self.mazelayout = read_maze_layout(self.filename)
-            self.b_draw_maze.state(['!disabled'])
-            self.parent_root.bind('<Return>', self.print_maze)
+            if self.filename != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
+                self.b_draw_maze.state(['!disabled'])
+                self.parent_root.bind('<Return>', self.print_maze)
         except ValueError:
             print('ValueError file')
 
