@@ -14,11 +14,15 @@ class Mazesolver_GUI:
 
     def __init__(self, parent_root):
         self.size        = 800
-        self.nr_of_cells = 8
+        self.nr_of_cells = 16
         self.edge_list_S = [self.nr_of_cells*i for i in range(1, self.nr_of_cells+1)]
         self.edge_list_N = [i-(self.nr_of_cells-1) for i in self.edge_list_S]
+        self.edge_list_W = list(range(1,self.nr_of_cells+1))
+        self.edge_list_E = list(range(self.nr_of_cells**2+1-self.nr_of_cells ,self.nr_of_cells**2+1))
         print(self.edge_list_S)
         print(self.edge_list_N)
+        print(self.edge_list_W)
+        print(self.edge_list_E)
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
@@ -321,46 +325,79 @@ class Mazesolver_GUI:
                 self.walls_printed[ind][3] = 0
                 self.canvas.delete(wall_ind)
 
-    def is_wall_present(self, number, **option):
-        side_s = option.get('side')
-
-        if N == side_s:
+    def is_wall_present(self, number, side):
+        if len(side) != 1:
+            print('error, is_wall_present takes single direction argument (N or S or W or E)')
+        if N == side:
             wall_ind = 0
             wall_ind_neigh = 2
             ind_neigh = number-1 - 1
-        if E == side_s:
+        elif E == side:
             wall_ind = 1
             wall_ind_neigh = 3
             ind_neigh = number-1 + self.nr_of_cells
-        if S == side_s:
+        elif S == side:
             wall_ind = 2
             wall_ind_neigh = 0
             ind_neigh = number-1 + 1
-        if W == side_s:
+        elif W == side:
             wall_ind = 3
             wall_ind_neigh = 1
             ind_neigh = number-1 - self.nr_of_cells
 
         curr_cell_wall = self.walls_printed[number-1][wall_ind]
 
-        try:
-            neigh_cell_wall = self.walls_printed[ind_neigh][wall_ind_neigh]
-        except IndexError:
-            neigh_cell_wall = 0
+        if self.is_on_edge(number, side=side):
+            print('edge')
+            cond = curr_cell_wall == 0
+        else:
+            print('not edge')
+            try:
+                neigh_cell_wall = self.walls_printed[ind_neigh][wall_ind_neigh]
+            except IndexError:
+                neigh_cell_wall = 0
+            cond = curr_cell_wall == 0 and neigh_cell_wall == 0
+
+            try:
+                print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
+                                            self.walls_printed[ind_neigh], neigh_cell_wall))
+            except IndexError:
+                pass
 
         print('curr_cell[{}] = {}, curr_cell_wall = {}'.format(number-1,
                                     self.walls_printed[number-1], curr_cell_wall))
-        try:
-            print('neigh_cell[{}] = {}, neigh_cell_wall = {}'.format(ind_neigh,
-                                        self.walls_printed[ind_neigh], neigh_cell_wall))
-        except IndexError:
-            pass
-        if curr_cell_wall == 0 and neigh_cell_wall == 0:
+
+
+
+        if cond:
             print('Not present\n')
             return False
         else:
             print('Present\n')
             return True
+
+    def is_on_edge(self, number, side):
+        if number in self.edge_list_N:
+            if N == side:
+                return True
+            else:
+                return False
+        elif number in self.edge_list_S:
+            if S == side:
+                return True
+            else:
+                return False
+        elif number in self.edge_list_E:
+            if E == side:
+                return True
+            else:
+                return False
+        elif number in self.edge_list_W:
+            if W == side:
+                return True
+            else:
+                return False
+
 
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
     # dodatkowy argument - rodzaj eventu jaki go wywołał
