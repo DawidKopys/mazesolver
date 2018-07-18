@@ -81,13 +81,13 @@ class Mazesolver_GUI:
         if self.maze_edit_enable == False:
             self.maze_edit_enable = True
             self.b_edit_maze.configure(text='Exit Edit')
-            self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
+            self.canvas.bind('<Double-Button-1>', self.find_closest_cell)
             self.b_edit_maze.state(['pressed'])
             self.canvas.configure(background='white')
         elif self.maze_edit_enable == True:
             self.maze_edit_enable = False
             self.b_edit_maze.configure(text='Edit Maze')
-            self.parent_root.unbind('<Double-Button-1>')
+            self.canvas.unbind('<Double-Button-1>')
             self.b_edit_maze.state(['!pressed'])
             self.canvas.configure(background='#d9dde2')
 
@@ -96,6 +96,7 @@ class Mazesolver_GUI:
         # jak to działa
         cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
         cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
+
         cell_ind = self.cells_centres_flat.index([cell_x, cell_y]) + 1
 
         x_diff = event.x - cell_x
