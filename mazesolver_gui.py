@@ -390,18 +390,22 @@ class Mazesolver_GUI:
             if N == side:
                 return True
             else:
-                return False
-        elif number in self.edge_list_S:
+                #edge cells that are both in N and E or W list
+                if number not in self.edge_list_E and number not in self.edge_list_W:
+                    return False
+        if number in self.edge_list_S:
             if S == side:
                 return True
             else:
-                return False
-        elif number in self.edge_list_E:
+                #edge cells that are both in S and E or W list
+                if number not in self.edge_list_E and number not in self.edge_list_W:
+                    return False
+        if number in self.edge_list_E:
             if E == side:
                 return True
             else:
                 return False
-        elif number in self.edge_list_W:
+        if number in self.edge_list_W:
             if W == side:
                 return True
             else:
