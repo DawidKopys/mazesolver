@@ -19,15 +19,12 @@ class Mazesolver_GUI:
         self.edge_list_N = [i-(self.nr_of_cells-1) for i in self.edge_list_S]
         self.edge_list_W = list(range(1,self.nr_of_cells+1))
         self.edge_list_E = list(range(self.nr_of_cells**2+1-self.nr_of_cells ,self.nr_of_cells**2+1))
-        print(self.edge_list_S)
-        print(self.edge_list_N)
-        print(self.edge_list_W)
-        print(self.edge_list_E)
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
         self.points_list = []
         self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+        self.maze_edit_enable = False
 
         self.parent_root = parent_root
 
@@ -59,17 +56,19 @@ class Mazesolver_GUI:
         self.menuframe.rowconfigure(0, weight=2)
 
         self.canvas = Canvas(self.mazeframe, width=self.size + 2*self.offset, height=self.size + 2*self.offset)
-        self.canvas.configure(background='white')
+        self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
-        self.b_save_maze     = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
+        self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
+        self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
         self.b_draw_maze.grid()
         self.b_clear_maze.grid()
         self.b_open_maze_file.grid()
         self.b_save_maze.grid()
+        self.b_edit_maze.grid()
 
         self.print_outline()
         self.create_cells_points()
@@ -77,7 +76,20 @@ class Mazesolver_GUI:
 
         self.b_draw_maze.focus()
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
-        self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
+
+    def toggle_maze_edit(self):
+        if self.maze_edit_enable == False:
+            self.maze_edit_enable = True
+            self.b_edit_maze.configure(text='Exit Edit')
+            self.parent_root.bind('<Double-Button-1>', self.find_closest_cell)
+            self.b_edit_maze.state(['pressed'])
+            self.canvas.configure(background='white')
+        elif self.maze_edit_enable == True:
+            self.maze_edit_enable = False
+            self.b_edit_maze.configure(text='Edit Maze')
+            self.parent_root.unbind('<Double-Button-1>')
+            self.b_edit_maze.state(['!pressed'])
+            self.canvas.configure(background='#d9dde2')
 
     # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):
