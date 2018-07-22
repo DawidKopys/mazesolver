@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk, filedialog
 from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
-import mazesolver_alg
+from mazesolver_alg import Micromouse
 
 import time
 
@@ -36,6 +36,8 @@ class Mazesolver_GUI:
         self.left  = self.offset
         self.down  = self.size + self.offset
         self.right = self.size + self.offset
+
+        self.mm_color = 'red'
 
         parent_root.wm_title('MazeSolver')
 
@@ -74,6 +76,8 @@ class Mazesolver_GUI:
         self.print_outline()
         self.create_cells_points()
         self.print_cell_number(numbers=all)
+
+        self.mm = Micromouse(start_pos=0, start_orientation=S)
 
         self.b_draw_maze.focus()
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
@@ -170,6 +174,22 @@ class Mazesolver_GUI:
         self.cells_centres_flat = [col for row in self.cells_centres for col in row]
         self.cells_centres_x = [cell[0] for cell in self.cells_centres_flat]
         self.cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
+
+    # print micromouse and create self.mm object
+    def print_mm(self, micromouse):
+        # cell_coords = self.cells_centres[0][0]
+        cell_coords = self.cells_centres_flat[micromouse.current_position]
+        cell_x = cell_coords[0]
+        cell_y = cell_coords[1]
+        size_corrector = self.step/16
+        N_W_x = cell_x - self.step/4 + size_corrector
+        N_W_y = cell_y - self.step/4
+        N_E_x = cell_x + self.step/4 - size_corrector
+        N_E_y = N_W_y
+        C_x = cell_x
+        C_y = cell_y + self.step/4
+        self.mm_polygon = self.canvas.create_polygon(N_W_x, N_W_y,
+                            N_E_x, N_E_y, C_x, C_y, fill=self.mm_color)
 
     # funkcja rysująca numery wszystkich komórek
     # param:
@@ -435,13 +455,8 @@ class Mazesolver_GUI:
             side = ''
             ind = ind + 1
 
-        p1 = self.cells_centres[0][0]
-        p2 = self.cells_centres[0][1]
-        p3 = self.cells_centres[1][1]
-        print(p1)
-        print(p2)
-        print(p3)
-        self.canvas.create_polygon(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1])
+        self.print_mm(self.mm)
+        self.mm.read_environment(self.mazelayout)
 
     def load_maze_layout(self):
         try:
