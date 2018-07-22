@@ -1,3 +1,4 @@
+# function reading maze layout to file, save the information in Mazesolver.mazelayout
 def read_maze_layout(filename):
     try:
         with open(filename, 'r') as maze_layout_f:
@@ -20,6 +21,7 @@ def all_children (wid) :
 
     return _list
 
+# function to convert Mazesolver.walls_printed to Mazesolver.mazelayout
 def prepare_maze_layout_list(maze_layout):
     maze_layout_out = []
     ind = 0

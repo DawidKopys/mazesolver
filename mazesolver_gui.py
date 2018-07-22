@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk, filedialog
 from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
+import mazesolver_alg
 
 import time
 
@@ -433,7 +434,14 @@ class Mazesolver_GUI:
             # print('mazelayout[{}] = {}, walls_printed = {}'.format(ind-1, self.mazelayout[ind-1], self.walls_printed[ind-1]))
             side = ''
             ind = ind + 1
-        print(prepare_maze_layout_list(self.walls_printed))
+
+        p1 = self.cells_centres[0][0]
+        p2 = self.cells_centres[0][1]
+        p3 = self.cells_centres[1][1]
+        print(p1)
+        print(p2)
+        print(p3)
+        self.canvas.create_polygon(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1])
 
     def load_maze_layout(self):
         try:
@@ -444,7 +452,6 @@ class Mazesolver_GUI:
             if self.filename != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
                 self.b_draw_maze.state(['!disabled'])
                 self.parent_root.bind('<Return>', self.print_maze)
-                print(self.mazelayout)
         except ValueError:
             print('ValueError file')
 
@@ -464,4 +471,7 @@ class Mazesolver_GUI:
 
 root = Tk()
 mazesolver = Mazesolver_GUI(root)
+
+
+
 root.mainloop()
