@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk, filedialog
 from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
-from mazesolver_alg import Micromouse
+from mazesolver_alg import *
 
 import time
 
@@ -62,25 +62,36 @@ class Mazesolver_GUI:
         self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
+        self.mm = Micromouse(start_pos=0, start_orientation=S)
+
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
+        self.b_mm_step        = ttk.Button(self.menuframe, text='Micromouse Step', command=self.mm_step)
         self.b_draw_maze.grid()
         self.b_clear_maze.grid()
         self.b_open_maze_file.grid()
         self.b_save_maze.grid()
         self.b_edit_maze.grid()
+        self.b_mm_step.grid()
 
         self.print_outline()
         self.create_cells_points()
         self.print_cell_number(numbers=all)
 
-        self.mm = Micromouse(start_pos=0, start_orientation=S)
-
         self.b_draw_maze.focus()
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
+
+        self.print_wall_NSEW = {0:print_wall_N, 1:print_wall_E, 2:print_wall_S, 3:print_wall_W}
+
+    def mm_step(self):
+        self.mm.step()
+        for side in orientation_dict.values():
+            if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
+                self.print_wall_NSEW[side]()
+
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
