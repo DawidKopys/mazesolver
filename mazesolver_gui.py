@@ -62,7 +62,7 @@ class Mazesolver_GUI:
         self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
-        self.mm = Micromouse(start_pos=0, start_orientation=S)
+        self.mm = Micromouse(start_pos=134, start_orientation=S)
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
@@ -84,14 +84,21 @@ class Mazesolver_GUI:
         self.b_draw_maze.focus()
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
 
-        self.print_wall_NSEW = {0:print_wall_N, 1:print_wall_E, 2:print_wall_S, 3:print_wall_W}
+        self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
     def mm_step(self):
+        print('mm_step')
         self.mm.step()
         for side in orientation_dict.values():
             if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-                self.print_wall_NSEW[side]()
+                coords = self.get_cell_coords(self.mm.current_position)
+                self.print_wall_NSEW[side](coords[0], coords[1],
+                                colour='red', w_width=self.walls_width/2)
 
+    def get_cell_coords(self, number):
+        cell_x = self.cells_centres_flat[number][0]
+        cell_y = self.cells_centres_flat[number][1]
+        return [cell_x, cell_y]
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
@@ -230,34 +237,42 @@ class Mazesolver_GUI:
     #   @cell_coord_x - koordynata x komórki
     #   @cell_coord_y - koordynata y komórki
     # return: none
-    def print_wall_N(self, cell_coord_x, cell_coord_y):
+    def print_wall_N(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
+        if w_width == None:
+            w_width = self.walls_width
         wall_id = self.canvas.create_line(cell_coord_x - self.dist_centre_to_wall - self.walls_width/2, cell_coord_y - self.dist_centre_to_wall,
                                 cell_coord_x + self.dist_centre_to_wall + self.walls_width/2, cell_coord_y - self.dist_centre_to_wall,
-                                fill='blue', width=self.walls_width)
+                                fill=colour, width=w_width)
         return wall_id
 
     # funkcja rysuje dolną ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
-    def print_wall_S(self, cell_coord_x, cell_coord_y):
+    def print_wall_S(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
+        if w_width == None:
+            w_width = self.walls_width
         wall_id = self.canvas.create_line(cell_coord_x - self.dist_centre_to_wall - self.walls_width/2, cell_coord_y + self.dist_centre_to_wall,
                                 cell_coord_x + self.dist_centre_to_wall + self.walls_width/2, cell_coord_y + self.dist_centre_to_wall,
-                                fill='blue', width=self.walls_width)
+                                fill=colour, width=w_width)
         return wall_id
 
     # funkcja rysuje prawą ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
-    def print_wall_E(self, cell_coord_x, cell_coord_y):
+    def print_wall_E(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
+        if w_width == None:
+            w_width = self.walls_width
         wall_id = self.canvas.create_line(cell_coord_x + self.dist_centre_to_wall, cell_coord_y - self.dist_centre_to_wall - self.walls_width/2,
                                 cell_coord_x + self.dist_centre_to_wall, cell_coord_y + self.dist_centre_to_wall + self.walls_width/2,
-                                fill='blue', width=self.walls_width)
+                                fill=colour, width=w_width)
         return wall_id
 
     # funkcja rysuje lewą ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
-    def print_wall_W(self, cell_coord_x, cell_coord_y):
+    def print_wall_W(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
+        if w_width == None:
+            w_width = self.walls_width
         wall_id = self.canvas.create_line(cell_coord_x - self.dist_centre_to_wall, cell_coord_y - self.dist_centre_to_wall - self.walls_width/2,
                                 cell_coord_x - self.dist_centre_to_wall, cell_coord_y + self.dist_centre_to_wall + self.walls_width/2,
-                                fill='blue', width=self.walls_width)
+                                fill=colour, width=w_width)
         return wall_id
 
     # funkcja rysująca ściany wskazane przez parametr side w komórce o numerze number
