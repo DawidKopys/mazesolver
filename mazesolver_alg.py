@@ -14,6 +14,9 @@ class Micromouse:
     left_turn_dict   = {N:W, E:N, S:E, W:S}
     go_forward_dict  = {N:N, E:E, S:S, W:W}
     go_back_dict     = {N:S, E:W, S:N, W:E}
+    # update distance_dict so that it uses nr_of_cells
+    distance_dict    = {N:-1, E:16, S:1, W:-16}
+    alg = 'L'
 
     def __init__(self, start_pos=0, start_orientation=S):
         self.nr_of_cells = 16
@@ -28,6 +31,8 @@ class Micromouse:
         # etap rozwiazywania labiryntu - przeszukiwanie (INSPECTION) lub wyscig (RACE)
         self.state = INSPECTION
 
+        self.last_turn = None
+
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
         self.mazelayout_mm[cell_number][side_nr] = 1
@@ -41,17 +46,38 @@ class Micromouse:
         self.mazelayout_mm[self.current_position][4] = 'visited'
 
     def step(self):
-        print(self.mazelayout_mm[self.current_position])
-        self.update_cell()
-        print(self.mazelayout_mm[self.current_position])
-        if self.can_go_right() == True:
-            print('can_go_right')
-        if self.can_go_left() == True:
-            print('can_go_left')
-        if self.can_go_forward() == True:
-            print('can_go_forward')
-        if self.can_go_back() == True:
-            print('can_go_back')
+        if self.mazelayout_mm[self.current_position][4] == 'Not visited':
+            # print(self.mazelayout_mm[self.current_position])
+            self.update_cell()
+            # print(self.mazelayout_mm[self.current_position])
+        else:
+            # move/turn
+            # todo: function maker with this alg on __init__
+            self.is_goal_reached()
+            if Micromouse.alg == 'L': #left-hand rule
+                if self.can_go_left() == True:
+                    self.turn_left()
+                    self.go_forward()
+                elif self.can_go_forward() == True:
+                    self.go_forward()
+                elif self.can_go_right() == True:
+                    self.turn_right()
+                    self.go_forward()
+                elif self.can_go_back() == True:
+                    print("End Point")
+                    self.turn_back()
+            elif Micromouse.alg == 'R': #right-hand rule
+                if self.can_go_right() == True:
+                    self.turn_right()
+                    self.go_forward()
+                elif self.can_go_forward() == True:
+                    self.go_forward()
+                elif self.can_go_left() == True:
+                    self.turn_left()
+                    self.go_forward()
+                elif self.can_go_back() == True:
+                    print("End Point")
+                    self.turn_back()
 
 
     def can_go_x(self, turn_dict):
@@ -72,6 +98,23 @@ class Micromouse:
 
     def can_go_back(self):
         return self.can_go_x(Micromouse.go_back_dict)
+
+    def is_goal_reached(self):
+        if self.current_position in [119, 135, 129, 136]:
+            print('YOU WON!')
+            exit()
+
+    def turn_right(self):
+        self.current_orientation = Micromouse.right_turn_dict[self.current_orientation]
+
+    def turn_left(self):
+        self.current_orientation = Micromouse.left_turn_dict[self.current_orientation]
+
+    def turn_back(self):
+        self.current_orientation = Micromouse.go_back_dict[self.current_orientation]
+
+    def go_forward(self):
+        self.current_position = self.current_position + Micromouse.distance_dict[self.current_orientation]
 
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):

@@ -14,7 +14,7 @@ all = 'all'
 def print_wall_decorate(func):
     def func_wrapper(self, number, colour='blue', w_width=None):
         coords = self.get_cell_coords(number)
-        func(self, coords[0], coords[1], colour, w_width)
+        return func(self, coords[0], coords[1], colour, w_width)
 
     return func_wrapper
 
@@ -69,7 +69,8 @@ class Mazesolver_GUI:
         self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
-        self.mm = Micromouse(start_pos=0, start_orientation=S)
+        self.mm = Micromouse(start_pos=245, start_orientation=W)
+        self.mm_polygon = None
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
@@ -94,8 +95,9 @@ class Mazesolver_GUI:
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
     def mm_step(self):
-        print('mm_step')
+        # print('mm_step')
         self.mm.step()
+        self.print_mm()
         for side in orientation_dict.values():
             if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
                 self.print_wall_NSEW[side](self.mm.current_position,
@@ -201,7 +203,9 @@ class Mazesolver_GUI:
 
     # print micromouse and create self.mm object
     def print_mm(self):
-        # cell_coords = self.cells_centres[0][0]
+        if self.mm_polygon != None:
+            self.canvas.delete(self.mm_polygon)
+        # cell_coords = self.cel    ls_centres[0][0]
         cell_coords = self.get_cell_coords(self.mm.current_position)
         cell_x = cell_coords[0]
         cell_y = cell_coords[1]
