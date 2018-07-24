@@ -11,6 +11,13 @@ all = 'all'
 
 # print('mazelayout[{}] = {}, walls_printed = {}'.format(ind-1, self.mazelayout[ind-1], self.walls_printed[ind-1]))
 
+def print_wall_decorate(func):
+    def func_wrapper(self, number, colour='blue', w_width=None):
+        coords = self.get_cell_coords(number)
+        func(self, coords[0], coords[1], colour, w_width)
+
+    return func_wrapper
+
 class Mazesolver_GUI:
 
     def __init__(self, parent_root):
@@ -91,8 +98,7 @@ class Mazesolver_GUI:
         self.mm.step()
         for side in orientation_dict.values():
             if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-                coords = self.get_cell_coords(self.mm.current_position)
-                self.print_wall_NSEW[side](coords[0], coords[1],
+                self.print_wall_NSEW[side](self.mm.current_position,
                                 colour='red', w_width=self.walls_width/2)
 
     def get_cell_coords(self, number):
@@ -232,11 +238,14 @@ class Mazesolver_GUI:
         for number in numbers:
             self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
 
+
+
     # funkcja rysuje górną ścianę w komórce o podanym numerze
     # param:
     #   @cell_coord_x - koordynata x komórki
     #   @cell_coord_y - koordynata y komórki
     # return: none
+    @print_wall_decorate
     def print_wall_N(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
         if w_width == None:
             w_width = self.walls_width
@@ -247,6 +256,7 @@ class Mazesolver_GUI:
 
     # funkcja rysuje dolną ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
+    @print_wall_decorate
     def print_wall_S(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
         if w_width == None:
             w_width = self.walls_width
@@ -257,6 +267,7 @@ class Mazesolver_GUI:
 
     # funkcja rysuje prawą ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
+    @print_wall_decorate
     def print_wall_E(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
         if w_width == None:
             w_width = self.walls_width
@@ -267,6 +278,7 @@ class Mazesolver_GUI:
 
     # funkcja rysuje lewą ścianę w komórce o podanym numerze
     # desc: patrz print_wall_N
+    @print_wall_decorate
     def print_wall_W(self, cell_coord_x, cell_coord_y, colour='blue', w_width=None):
         if w_width == None:
             w_width = self.walls_width
@@ -280,53 +292,42 @@ class Mazesolver_GUI:
         side_s = option.get('side')
         caller = option.get('caller')
 
-        cell_x = self.cells_centres_flat[number-1][0]
-        cell_y = self.cells_centres_flat[number-1][1]
-
         if N in side_s:
             if caller == 'double_press':
                 if not self.is_wall_present(number, side=N):
-                    self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
+                    self.walls_printed[number-1][0] = self.print_wall_N(number-1)
                 if not self.is_on_edge(number, side=N):
                     # jesli nie na krawedzi, narysuj tez sciane u sąsiada
-                    cell_x_neigh = self.cells_centres_flat[number-1-1][0]
-                    cell_y_neigh = self.cells_centres_flat[number-1-1][1]
-                    self.walls_printed[number-1-1][2] = self.print_wall_S(cell_x_neigh, cell_y_neigh)
+                    self.walls_printed[number-1-1][2] = self.print_wall_S(number-1-1)
             else:
-                self.walls_printed[number-1][0] = self.print_wall_N(cell_x, cell_y)
+                self.walls_printed[number-1][0] = self.print_wall_N(number-1)
 
         if E in side_s:
             if caller == 'double_press':
                 if not self.is_wall_present(number, side=E):
-                    self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
+                    self.walls_printed[number-1][1] = self.print_wall_E(number-1)
                 if not self.is_on_edge(number, side=E):
-                    cell_x_neigh = self.cells_centres_flat[number-1+self.nr_of_cells][0]
-                    cell_y_neigh = self.cells_centres_flat[number-1+self.nr_of_cells][1]
-                    self.walls_printed[number-1+self.nr_of_cells][3] = self.print_wall_W(cell_x_neigh, cell_y_neigh)
+                    self.walls_printed[number-1+self.nr_of_cells][3] = self.print_wall_W(number-1+self.nr_of_cells)
             else:
-                self.walls_printed[number-1][1] = self.print_wall_E(cell_x, cell_y)
+                self.walls_printed[number-1][1] = self.print_wall_E(number-1)
 
         if S in side_s:
             if caller == 'double_press':
                 if not self.is_wall_present(number, side=S):
-                    self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
+                    self.walls_printed[number-1][2] = self.print_wall_S(number-1)
                 if not self.is_on_edge(number, side=S):
-                    cell_x_neigh = self.cells_centres_flat[number-1+1][0]
-                    cell_y_neigh = self.cells_centres_flat[number-1+1][1]
-                    self.walls_printed[number-1+1][0] = self.print_wall_N(cell_x_neigh, cell_y_neigh)
+                    self.walls_printed[number-1+1][0] = self.print_wall_N(number-1+1)
             else:
-                self.walls_printed[number-1][2] = self.print_wall_S(cell_x, cell_y)
+                self.walls_printed[number-1][2] = self.print_wall_S(number-1)
 
         if W in side_s:
             if caller == 'double_press':
                 if not self.is_wall_present(number, side=W):
-                    self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
+                    self.walls_printed[number-1][3] = self.print_wall_W(number-1)
                 if not self.is_on_edge(number, side=W):
-                    cell_x_neigh = self.cells_centres_flat[number-1-self.nr_of_cells][0]
-                    cell_y_neigh = self.cells_centres_flat[number-1-self.nr_of_cells][1]
-                    self.walls_printed[number-1-self.nr_of_cells][1] = self.print_wall_E(cell_x_neigh, cell_y_neigh)
+                    self.walls_printed[number-1-self.nr_of_cells][1] = self.print_wall_E(number-1-self.nr_of_cells)
             else:
-                self.walls_printed[number-1][3] = self.print_wall_W(cell_x, cell_y)
+                self.walls_printed[number-1][3] = self.print_wall_W(number-1)
 
         # walls_printed n-elementowa lista w formacie [[N, E, S, W], ...], n to ilosc
         # print('print_wall: cell {}: {}\n'.format(number, self.walls_printed[number-1]))
