@@ -69,7 +69,7 @@ class Mazesolver_GUI:
         self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
-        self.mm = Micromouse(start_pos=134, start_orientation=S)
+        self.mm = Micromouse(start_pos=0, start_orientation=S)
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
@@ -200,18 +200,41 @@ class Mazesolver_GUI:
         self.cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
 
     # print micromouse and create self.mm object
-    def print_mm(self, micromouse):
+    def print_mm(self):
         # cell_coords = self.cells_centres[0][0]
-        cell_coords = self.cells_centres_flat[micromouse.current_position]
+        cell_coords = self.get_cell_coords(self.mm.current_position)
         cell_x = cell_coords[0]
         cell_y = cell_coords[1]
         size_corrector = self.step/16
-        N_W_x = cell_x - self.step/4 + size_corrector
-        N_W_y = cell_y - self.step/4
-        N_E_x = cell_x + self.step/4 - size_corrector
-        N_E_y = N_W_y
-        C_x = cell_x
-        C_y = cell_y + self.step/4
+        if self.mm.current_orientation == S:
+            N_W_x = cell_x - self.step/4 + size_corrector
+            N_W_y = cell_y - self.step/4
+            N_E_x = cell_x + self.step/4 - size_corrector
+            N_E_y = N_W_y
+            C_x = cell_x
+            C_y = cell_y + self.step/4
+        elif self.mm.current_orientation == N:
+            N_W_x = cell_x - self.step/4 + size_corrector
+            N_W_y = cell_y + self.step/4
+            N_E_x = cell_x + self.step/4 - size_corrector
+            N_E_y = N_W_y
+            C_x = cell_x
+            C_y = cell_y - self.step/4
+        elif self.mm.current_orientation == E:
+            N_W_x = cell_x - self.step/4
+            N_W_y = cell_y - self.step/4 + size_corrector
+            N_E_x = N_W_x
+            N_E_y = cell_y + self.step/4 - size_corrector
+            C_x = cell_x + self.step/4
+            C_y = cell_y
+        elif self.mm.current_orientation == W:
+            N_W_x = cell_x + self.step/4
+            N_W_y = cell_y - self.step/4 + size_corrector
+            N_E_x = N_W_x
+            N_E_y = cell_y + self.step/4 - size_corrector
+            C_x = cell_x - self.step/4
+            C_y = cell_y
+
         self.mm_polygon = self.canvas.create_polygon(N_W_x, N_W_y,
                             N_E_x, N_E_y, C_x, C_y, fill=self.mm_color)
 
@@ -482,7 +505,7 @@ class Mazesolver_GUI:
             side = ''
             ind = ind + 1
 
-        self.print_mm(self.mm)
+        self.print_mm()
         self.mm.read_environment(self.mazelayout)
 
     def load_maze_layout(self):

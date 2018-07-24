@@ -7,12 +7,13 @@ inspection = 'INSPECTION'
 RACE = 'RACE'
 race = 'RACE'
 orientation_dict = {N:0, E:1, S:2, W:3}
-right_turn_dict  = {N:E, E:S, S:W, W:N}
-left_turn_dict   = {N:W, E:N, S:E, W:S}
-go_forward_dict  = {N:N, E:E, S:S, W:W}
-go_back_dict     = {N:S, E:W, S:N, W:E}
+
 
 class Micromouse:
+    right_turn_dict  = {N:E, E:S, S:W, W:N}
+    left_turn_dict   = {N:W, E:N, S:E, W:S}
+    go_forward_dict  = {N:N, E:E, S:S, W:W}
+    go_back_dict     = {N:S, E:W, S:N, W:E}
 
     def __init__(self, start_pos=0, start_orientation=S):
         self.nr_of_cells = 16
@@ -44,21 +45,14 @@ class Micromouse:
         self.update_cell()
         print(self.mazelayout_mm[self.current_position])
         if self.can_go_right() == True:
-            print('Can turn right')
-        else:
-            print('Can\'t turn right')
+            print('can_go_right')
         if self.can_go_left() == True:
-            print('Can turn left')
-        else:
-            print('Can\'t turn left')
+            print('can_go_left')
         if self.can_go_forward() == True:
-            print('Can go forward')
-        else:
-            print('Can\'t go forward')
+            print('can_go_forward')
         if self.can_go_back() == True:
-            print('Can go back')
-        else:
-            print('Can\'t go back')
+            print('can_go_back')
+
 
     def can_go_x(self, turn_dict):
         side = orientation_dict[turn_dict[self.current_orientation]]
@@ -68,16 +62,16 @@ class Micromouse:
             return True
 
     def can_go_right(self):
-        return self.can_go_x(right_turn_dict)
+        return self.can_go_x(Micromouse.right_turn_dict)
 
     def can_go_left(self):
-        return self.can_go_x(left_turn_dict)
+        return self.can_go_x(Micromouse.left_turn_dict)
 
     def can_go_forward(self):
-        return self.can_go_x(go_forward_dict)
+        return self.can_go_x(Micromouse.go_forward_dict)
 
     def can_go_back(self):
-        return self.can_go_x(go_back_dict)
+        return self.can_go_x(Micromouse.go_back_dict)
 
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):
