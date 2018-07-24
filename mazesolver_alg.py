@@ -7,7 +7,10 @@ inspection = 'INSPECTION'
 RACE = 'RACE'
 race = 'RACE'
 orientation_dict = {N:0, E:1, S:2, W:3}
-right_turn_dict = {N:E, E:S, S:W, W:N}
+right_turn_dict  = {N:E, E:S, S:W, W:N}
+left_turn_dict   = {N:W, E:N, S:E, W:S}
+go_forward_dict  = {N:N, E:E, S:S, W:W}
+go_back_dict     = {N:S, E:W, S:N, W:E}
 
 class Micromouse:
 
@@ -40,13 +43,48 @@ class Micromouse:
         print(self.mazelayout_mm[self.current_position])
         self.update_cell()
         print(self.mazelayout_mm[self.current_position])
-        if self.can_turn_right() == True:
+        if self.can_go_right() == True:
             print('Can turn right')
         else:
             print('Can\'t turn right')
+        if self.can_go_left() == True:
+            print('Can turn left')
+        else:
+            print('Can\'t turn left')
+        if self.can_go_forward() == True:
+            print('Can go forward')
+        else:
+            print('Can\'t go forward')
+        if self.can_go_back() == True:
+            print('Can go back')
+        else:
+            print('Can\'t go back')
 
-    def can_turn_right(self):
+
+
+    def can_go_right(self):
         side = orientation_dict[right_turn_dict[self.current_orientation]]
+        if self.mazelayout_mm[self.current_position][side] == 1:
+            return False
+        else:
+            return True
+
+    def can_go_left(self):
+        side = orientation_dict[left_turn_dict[self.current_orientation]]
+        if self.mazelayout_mm[self.current_position][side] == 1:
+            return False
+        else:
+            return True
+
+    def can_go_forward(self):
+        side = orientation_dict[go_forward_dict[self.current_orientation]]
+        if self.mazelayout_mm[self.current_position][side] == 1:
+            return False
+        else:
+            return True
+
+    def can_go_back(self):
+        side = orientation_dict[go_back_dict[self.current_orientation]]
         if self.mazelayout_mm[self.current_position][side] == 1:
             return False
         else:
