@@ -60,35 +60,24 @@ class Micromouse:
         else:
             print('Can\'t go back')
 
-
+    def can_go_x(self, turn_dict):
+        side = orientation_dict[turn_dict[self.current_orientation]]
+        if self.mazelayout_mm[self.current_position][side] == 1:
+            return False
+        else:
+            return True
 
     def can_go_right(self):
-        side = orientation_dict[right_turn_dict[self.current_orientation]]
-        if self.mazelayout_mm[self.current_position][side] == 1:
-            return False
-        else:
-            return True
+        return self.can_go_x(right_turn_dict)
 
     def can_go_left(self):
-        side = orientation_dict[left_turn_dict[self.current_orientation]]
-        if self.mazelayout_mm[self.current_position][side] == 1:
-            return False
-        else:
-            return True
+        return self.can_go_x(left_turn_dict)
 
     def can_go_forward(self):
-        side = orientation_dict[go_forward_dict[self.current_orientation]]
-        if self.mazelayout_mm[self.current_position][side] == 1:
-            return False
-        else:
-            return True
+        return self.can_go_x(go_forward_dict)
 
     def can_go_back(self):
-        side = orientation_dict[go_back_dict[self.current_orientation]]
-        if self.mazelayout_mm[self.current_position][side] == 1:
-            return False
-        else:
-            return True
+        return self.can_go_x(go_back_dict)
 
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):
