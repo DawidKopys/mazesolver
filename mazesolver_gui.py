@@ -3,7 +3,7 @@ from tkinter import ttk, filedialog
 from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
 from mazesolver_alg import *
 
-import time
+import threading
 
 # defines for print_cell_number()
 ALL = 'all'
@@ -17,6 +17,7 @@ def print_wall_decorate(func):
         return func(self, coords[0], coords[1], colour, w_width)
 
     return func_wrapper
+
 
 class Mazesolver_GUI:
 
@@ -69,7 +70,7 @@ class Mazesolver_GUI:
         self.canvas.configure(background='#d9dde2')
         self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
 
-        self.mm = Micromouse(start_pos=245, start_orientation=W)
+        self.mm = Micromouse(start_pos=0, start_orientation=E)
         self.mm_polygon = None
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
@@ -77,7 +78,7 @@ class Mazesolver_GUI:
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
-        self.b_mm_step        = ttk.Button(self.menuframe, text='Micromouse Step', command=self.mm_step)
+        self.b_mm_step        = ttk.Button(self.menuframe, text='Micromouse Step', command=self.solve_maze)
         self.b_draw_maze.grid()
         self.b_clear_maze.grid()
         self.b_open_maze_file.grid()
@@ -93,6 +94,12 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
 
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
+
+
+    def solve_maze(self):
+        if self.mm.goal_reached == False:
+            threading.Timer(0.3, self.solve_maze).start()
+            self.mm_step()
 
     def mm_step(self):
         # print('mm_step')
@@ -537,10 +544,7 @@ class Mazesolver_GUI:
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
         write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
 
-
 root = Tk()
 mazesolver = Mazesolver_GUI(root)
-
-
 
 root.mainloop()

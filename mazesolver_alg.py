@@ -31,7 +31,7 @@ class Micromouse:
         # etap rozwiazywania labiryntu - przeszukiwanie (INSPECTION) lub wyscig (RACE)
         self.state = INSPECTION
 
-        self.last_turn = None
+        self.goal_reached = False
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -101,8 +101,8 @@ class Micromouse:
 
     def is_goal_reached(self):
         if self.current_position in [119, 135, 129, 136]:
-            print('YOU WON!')
-            exit()
+            print('!!!YOU WON!!!')
+            self.goal_reached = True
 
     def turn_right(self):
         self.current_orientation = Micromouse.right_turn_dict[self.current_orientation]
