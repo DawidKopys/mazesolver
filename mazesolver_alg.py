@@ -7,7 +7,7 @@ inspection = 'INSPECTION'
 RACE = 'RACE'
 race = 'RACE'
 orientation_dict = {N:0, E:1, S:2, W:3}
-
+right_turn_dict = {N:E, E:S, S:W, W:N}
 
 class Micromouse:
 
@@ -40,9 +40,21 @@ class Micromouse:
         print(self.mazelayout_mm[self.current_position])
         self.update_cell()
         print(self.mazelayout_mm[self.current_position])
+        if self.can_turn_right() == True:
+            print('Can turn right')
+        else:
+            print('Can\'t turn right')
+
+    def can_turn_right(self):
+        side = orientation_dict[right_turn_dict[self.current_orientation]]
+        if self.mazelayout_mm[self.current_position][side] == 1:
+            return False
+        else:
+            return True
 
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):
+
         self.environment = [[cell[0], cell[1], cell[2], cell[3]] for cell in mazelayout]
 
         # for row_Micromouse, row_Mazesolver in zip(self.mazelayout_mm, mazelayout):
