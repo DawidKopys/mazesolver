@@ -77,7 +77,7 @@ class Mazesolver_GUI:
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
-        self.b_mm_step        = ttk.Button(self.menuframe, text='Micromouse Step', command=self.solve_maze)
+        self.b_mm_step        = ttk.Button(self.menuframe, text='Solve The Maze', command=self.solve_maze)
         self.b_draw_maze.grid()
         self.b_clear_maze.grid()
         self.b_open_maze_file.grid()
