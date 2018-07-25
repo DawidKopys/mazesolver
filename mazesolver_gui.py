@@ -547,7 +547,8 @@ class Mazesolver_GUI:
     def save_maze_layout(self):
         self.filename_write = filedialog.askopenfilename(initialdir = ".",title = "Select file",
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
-        write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
+        if self.filename_write != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
+            write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
 
 root = Tk()
 mazesolver = Mazesolver_GUI(root)
