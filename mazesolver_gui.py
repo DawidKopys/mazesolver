@@ -21,6 +21,8 @@ def print_wall_decorate(func):
 class Mazesolver_GUI:
 
     def __init__(self, parent_root):
+        self.parent_root = parent_root
+
         self.size        = 800
         # nr_of_cells = nr_of_cells
         self.edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
@@ -33,9 +35,6 @@ class Mazesolver_GUI:
         self.points_list = []
         self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
         self.maze_edit_enable = False
-
-        self.parent_root = parent_root
-
         self.step = self.size / nr_of_cells
         self.dist_centre_to_wall = (self.size / nr_of_cells) / 2
 
@@ -47,6 +46,16 @@ class Mazesolver_GUI:
         self.mm_color = 'red'
 
         parent_root.wm_title('MazeSolver')
+        root_w = self.size*1.27
+        root_h = self.size+50
+        screen_w = parent_root.winfo_screenwidth()
+        screen_h = parent_root.winfo_screenheight()
+        # calculate x and y coordinates for the Tk root window
+        x = (screen_w/2) - (root_w/2)
+        y = (screen_h/2) - (root_h/2)
+        # set the dimensions of the screen
+        # and where it is placed
+        parent_root.geometry('%dx%d+%d+%d' % (root_w, root_h, x, y))
 
         # root childs can stretch
         parent_root.columnconfigure(0, weight=3)
@@ -54,20 +63,25 @@ class Mazesolver_GUI:
         parent_root.rowconfigure(0, weight=1)
 
         self.mazeframe = ttk.Frame(parent_root, padding="3 3 3 3")
-        self.mazeframe.grid(column=0, row=0, sticky=N+S+E+W)
-        self.mazeframe.configure(borderwidth=2, relief='sunken')
-        self.mazeframe.columnconfigure(0, weight=2)
-        self.mazeframe.rowconfigure(0, weight=2)
+        self.mazeframe.grid(column=0, row=0, sticky=N+S+E+W, rowspan=6)
+        # self.mazeframe.configure(borderwidth=2, relief='sunken')
+        # self.mazeframe.columnconfigure(0, weight=2)
+        # self.mazeframe.rowconfigure(0, weight=2)
 
         self.menuframe = ttk.Frame(parent_root, padding="3 3 3 3")
-        self.menuframe.grid(column=1, row=0, sticky=N+S+E+W)
-        self.menuframe.configure(borderwidth=2, relief='sunken')
-        self.menuframe.columnconfigure(0, weight=2)
-        self.menuframe.rowconfigure(0, weight=2)
+        self.menuframe.grid(column=1, row=0, sticky=N+S+E+W, rowspan=6)
+        # self.menuframe.configure(borderwidth=2, relief='sunken')
+        # self.menuframe.columnconfigure(0, weight=2)
+        # self.menuframe.rowconfigure(0, weight=2)
+
+        self.spaceframe1 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
+        self.spaceframe1.grid(column=0, row=6, sticky=E+W)
+        self.spaceframe2 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
+        self.spaceframe2.grid(column=0, row=10, sticky=S+E+W)
 
         self.canvas = Canvas(self.mazeframe, width=self.size + 2*self.offset, height=self.size + 2*self.offset)
         self.canvas.configure(background='#d9dde2')
-        self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
+        self.canvas.grid(row=0, column=1)
 
         self.mm = Micromouse(start_pos=0, start_orientation=E)
         self.mm_polygon = None
@@ -77,25 +91,54 @@ class Mazesolver_GUI:
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
-        self.b_mm_step        = ttk.Button(self.menuframe, text='Solve The Maze', command=self.solve_maze)
-        self.b_draw_maze.grid()
-        self.b_clear_maze.grid()
-        self.b_open_maze_file.grid()
-        self.b_save_maze.grid()
-        self.b_edit_maze.grid()
-        self.b_mm_step.grid()
+        self.b_mm_step        = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
+        self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
+
+        self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
+        self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
+        self.b_draw_maze.grid(column=0, row=2, sticky=E+W, pady=2)
+        self.b_place_mm.grid(column=0, row=3, sticky=E+W, pady=2)
+        self.b_clear_maze.grid(column=0, row=7, sticky=E+W, pady=2)
+        self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
+        self.b_mm_step.grid(column=0, row=9, sticky=E+W, pady=2)
+
+        self.algorithm_val = StringVar()
+        label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
+        self.cb_algorithm = ttk.Combobox(self.menuframe, textvariable=self.algorithm_val, state='readonly')
+        self.cb_algorithm['values'] = ['Left-hand Rule', 'Right-hand Rule']
+        self.cb_algorithm.current(0)
+
+        label_algorithm.grid(row=4, pady=2)
+        self.cb_algorithm.grid(row=5, pady=4, padx=10)
+
+        self.cb_algorithm.bind('<<ComboboxSelected>>', self.change_alg)
 
         self.print_outline()
         self.create_cells_points()
         self.print_cell_number(numbers=all)
 
-        self.b_draw_maze.focus()
+        self.b_open_maze_file.focus()
+        self.parent_root.bind('<Return>', self.load_maze_layout)
         self.parent_root.bind('<Control-c>', self.clear_maze_layout)
 
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
+    def change_alg(self, *args):
+        choice = self.algorithm_val.get()
+        self.cb_algorithm.select_clear()
+        if choice == 'Left-hand Rule':
+            Micromouse.alg = 'L'
+        elif choice == 'Right-hand Rule':
+            Micromouse.alg = 'R'
 
-    def solve_maze(self):
+    def place_mm(self, *args):
+        self.print_mm()
+        self.mm.read_environment(self.mazelayout)
+        self.b_mm_step.state(['!disabled'])
+        self.b_mm_step.focus()
+        self.parent_root.bind('<Return>', self.solve_maze)
+
+    def solve_maze(self, *args):
         if self.mm.goal_reached == False:
             threading.Timer(0.05, self.solve_maze).start()
             self.mm_step()
@@ -501,10 +544,8 @@ class Mazesolver_GUI:
     # event=0 ponieważ, kiedy wywołujemy fcje poprzez ENTER (bind), do fcji zostaje przekazany
     # dodatkowy argument - rodzaj eventu jaki go wywołał
     def print_maze(self, event=0):
-
         self.clear_maze_layout()
 
-        # self.print_walls_border()
         ind = 1
         side = ''
         for cell in self.mazelayout:
@@ -521,10 +562,11 @@ class Mazesolver_GUI:
             side = ''
             ind = ind + 1
 
-        self.print_mm()
-        self.mm.read_environment(self.mazelayout)
+        self.b_place_mm.state(['!disabled'])
+        self.b_place_mm.focus()
+        self.parent_root.bind('<Return>', self.place_mm)
 
-    def load_maze_layout(self):
+    def load_maze_layout(self, *args):
         try:
             self.filename = filedialog.askopenfilename(initialdir = ".",title = "Select file",
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
@@ -533,10 +575,11 @@ class Mazesolver_GUI:
             if self.filename != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
                 self.b_draw_maze.state(['!disabled'])
                 self.parent_root.bind('<Return>', self.print_maze)
+                self.b_draw_maze.focus()
         except ValueError:
             print('ValueError file')
 
-    def clear_maze_layout(self):
+    def clear_maze_layout(self, *args):
         for cell in self.walls_printed:
             for wall in cell:
                 if wall != 0:
