@@ -1,35 +1,35 @@
+from mazesolver_files import *
 
-from tkinter import *
-from mazesolver_files import zerolistmaker
 
 INSPECTION = 'INSPECTION'
 inspection = 'INSPECTION'
 RACE = 'RACE'
 race = 'RACE'
-orientation_dict = {N:0, E:1, S:2, W:3}
-
 
 class Micromouse:
     right_turn_dict  = {N:E, E:S, S:W, W:N}
     left_turn_dict   = {N:W, E:N, S:E, W:S}
     go_forward_dict  = {N:N, E:E, S:S, W:W}
     go_back_dict     = {N:S, E:W, S:N, W:E}
-    # update distance_dict so that it uses nr_of_cells
-    distance_dict    = {N:-1, E:16, S:1, W:-16}
-    alg = 'L'
+    distance_dict    = {N:-1, E:nr_of_cells, S:1, W:-nr_of_cells}
+    a = ((nr_of_cells**2)/2)-1
+    goal_cells_list = [int(a-(nr_of_cells/2)), int(a-(nr_of_cells/2)+1), int(a+(nr_of_cells/2)), int(a+(nr_of_cells/2)+1)]
+    # goal_cells_list = [28, 29, 36, 37]
+    alg = 'R'
 
     def __init__(self, start_pos=0, start_orientation=S):
-        self.nr_of_cells = 16
         # mapa otoczenia
-        self.environment = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+        self.environment = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
         # mapa wew. Micromouse, jest postaci [[N, E, S, W, visited]]
-        self.mazelayout_mm = [[0, 0, 0, 0, 'Not visited'] for i in range(self.nr_of_cells*self.nr_of_cells)]
+        self.mazelayout_mm = [[0, 0, 0, 0, 'Not visited'] for i in range(nr_of_cells*nr_of_cells)]
         # variable that stores mm current position, current cell, 0 - 255
         self.current_position = start_pos
         # variable that stores mm current orientation
         self.current_orientation  = start_orientation
         # etap rozwiazywania labiryntu - przeszukiwanie (INSPECTION) lub wyscig (RACE)
         self.state = INSPECTION
+
+        self.visited_cells = []
 
         self.goal_reached = False
 
@@ -46,6 +46,11 @@ class Micromouse:
         self.mazelayout_mm[self.current_position][4] = 'visited'
 
     def step(self):
+        try:
+            if self.visited_cells[len(self.visited_cells)-1] != self.current_position:
+                self.visited_cells.append(self.current_position)
+        except IndexError:
+            self.visited_cells.append(self.current_position)
         if self.mazelayout_mm[self.current_position][4] == 'Not visited':
             # print(self.mazelayout_mm[self.current_position])
             self.update_cell()
@@ -64,7 +69,6 @@ class Micromouse:
                     self.turn_right()
                     self.go_forward()
                 elif self.can_go_back() == True:
-                    print("End Point")
                     self.turn_back()
             elif Micromouse.alg == 'R': #right-hand rule
                 if self.can_go_right() == True:
@@ -76,7 +80,6 @@ class Micromouse:
                     self.turn_left()
                     self.go_forward()
                 elif self.can_go_back() == True:
-                    print("End Point")
                     self.turn_back()
 
 
@@ -100,7 +103,7 @@ class Micromouse:
         return self.can_go_x(Micromouse.go_back_dict)
 
     def is_goal_reached(self):
-        if self.current_position in [119, 135, 129, 136]:
+        if self.current_position in Micromouse.goal_cells_list:
             print('!!!YOU WON!!!')
             self.goal_reached = True
 

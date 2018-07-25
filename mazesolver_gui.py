@@ -1,7 +1,6 @@
-from tkinter import *
 from tkinter import ttk, filedialog
-from mazesolver_files import read_maze_layout, zerolistmaker, prepare_maze_layout_list, write_maze_layout
-from mazesolver_alg import *
+from mazesolver_files import *
+from mazesolver_alg import Micromouse
 
 import threading
 
@@ -23,22 +22,22 @@ class Mazesolver_GUI:
 
     def __init__(self, parent_root):
         self.size        = 800
-        self.nr_of_cells = 16
-        self.edge_list_S = [self.nr_of_cells*i for i in range(1, self.nr_of_cells+1)]
-        self.edge_list_N = [i-(self.nr_of_cells-1) for i in self.edge_list_S]
-        self.edge_list_W = list(range(1,self.nr_of_cells+1))
-        self.edge_list_E = list(range(self.nr_of_cells**2+1-self.nr_of_cells ,self.nr_of_cells**2+1))
+        # nr_of_cells = nr_of_cells
+        self.edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
+        self.edge_list_N = [i-(nr_of_cells-1) for i in self.edge_list_S]
+        self.edge_list_W = list(range(1,nr_of_cells+1))
+        self.edge_list_E = list(range(nr_of_cells**2+1-nr_of_cells ,nr_of_cells**2+1))
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
         self.points_list = []
-        self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+        self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
         self.maze_edit_enable = False
 
         self.parent_root = parent_root
 
-        self.step = self.size / self.nr_of_cells
-        self.dist_centre_to_wall = (self.size / self.nr_of_cells) / 2
+        self.step = self.size / nr_of_cells
+        self.dist_centre_to_wall = (self.size / nr_of_cells) / 2
 
         self.up    = self.offset
         self.left  = self.offset
@@ -98,11 +97,12 @@ class Mazesolver_GUI:
 
     def solve_maze(self):
         if self.mm.goal_reached == False:
-            threading.Timer(0.3, self.solve_maze).start()
+            threading.Timer(0.05, self.solve_maze).start()
             self.mm_step()
+        else:
+            self.draw_path()
 
     def mm_step(self):
-        # print('mm_step')
         self.mm.step()
         self.print_mm()
         for side in orientation_dict.values():
@@ -114,6 +114,13 @@ class Mazesolver_GUI:
         cell_x = self.cells_centres_flat[number][0]
         cell_y = self.cells_centres_flat[number][1]
         return [cell_x, cell_y]
+
+    def draw_path(self):
+        path_coords = [self.get_cell_coords(cell) for cell in self.mm.visited_cells]
+        # print(path_coords)
+        for i in range(len(path_coords)-1):
+            self.canvas.create_line(path_coords[i][0], path_coords[i][1],
+                                    path_coords[i+1][0], path_coords[i+1][1], fill='green', width=self.walls_width/2)
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
@@ -177,7 +184,7 @@ class Mazesolver_GUI:
             pass
             x_pion = self.left
             y_poziom = self.up
-            for line in range(self.nr_of_cells):
+            for line in range(nr_of_cells):
                 x_pion = x_pion + self.step
                 self.canvas.create_line(x_pion, self.up, x_pion, self.down, width=self.grid_width)
                 y_poziom = y_poziom + self.step
@@ -189,7 +196,7 @@ class Mazesolver_GUI:
 
     # funkcja tworząca listę koordynat
     # param:
-    #   @self.nr_of_cells - ilość komórek w labiryncie
+    #   @nr_of_cells - ilość komórek w labiryncie
     #   @self.size        - rozmiar labiryntu (dlugosc boku w pixelach)
     #   @self.offset      - odleglosc ramki od krawędzi okna
     # return:
@@ -200,9 +207,9 @@ class Mazesolver_GUI:
     #        [[],[],[], ...                    ]...]
     def create_cells_points(self):
         self.cells_centres = []
-        for x in range(self.nr_of_cells):
+        for x in range(nr_of_cells):
             self.cells_centres.append([])
-            for y in range(self.nr_of_cells):
+            for y in range(nr_of_cells):
                 self.cells_centres[x].append([int(x * self.step + self.offset + self.step / 2), int(y * self.step + self.offset + self.step/2)])
         self.cells_centres_flat = [col for row in self.cells_centres for col in row]
         self.cells_centres_x = [cell[0] for cell in self.cells_centres_flat]
@@ -254,8 +261,8 @@ class Mazesolver_GUI:
     # return: none
     def print_cells_numbers(self):
         i = 1 #todo: change back to 0
-        for row in range(self.nr_of_cells):
-            for col in range(self.nr_of_cells):
+        for row in range(nr_of_cells):
+            for col in range(nr_of_cells):
                 self.canvas.create_text(self.cells_centres[row][col][0], self.cells_centres[row][col][1], text=str(i))
                 i = i + 1
 
@@ -268,11 +275,9 @@ class Mazesolver_GUI:
         if type(numbers) == int:
             numbers = [numbers] #jeśli argument jest pojedyńczą liczbą - utwórz listę, której jedynym elementem jest ta liczba
         elif numbers == 'all':
-            numbers = range(1, self.nr_of_cells**2+1)
+            numbers = range(1, nr_of_cells**2+1)
         for number in numbers:
             self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
-
-
 
     # funkcja rysuje górną ścianę w komórce o podanym numerze
     # param:
@@ -341,7 +346,7 @@ class Mazesolver_GUI:
                 if not self.is_wall_present(number, side=E):
                     self.walls_printed[number-1][1] = self.print_wall_E(number-1)
                 if not self.is_on_edge(number, side=E):
-                    self.walls_printed[number-1+self.nr_of_cells][3] = self.print_wall_W(number-1+self.nr_of_cells)
+                    self.walls_printed[number-1+nr_of_cells][3] = self.print_wall_W(number-1+nr_of_cells)
             else:
                 self.walls_printed[number-1][1] = self.print_wall_E(number-1)
 
@@ -359,7 +364,7 @@ class Mazesolver_GUI:
                 if not self.is_wall_present(number, side=W):
                     self.walls_printed[number-1][3] = self.print_wall_W(number-1)
                 if not self.is_on_edge(number, side=W):
-                    self.walls_printed[number-1-self.nr_of_cells][1] = self.print_wall_E(number-1-self.nr_of_cells)
+                    self.walls_printed[number-1-nr_of_cells][1] = self.print_wall_E(number-1-nr_of_cells)
             else:
                 self.walls_printed[number-1][3] = self.print_wall_W(number-1)
 
@@ -385,7 +390,7 @@ class Mazesolver_GUI:
             self.destroy_wall_single(ind=number-1, side=E)
 
             if not self.is_on_edge(number, side=E):
-                ind_neigh = number-1 + self.nr_of_cells
+                ind_neigh = number-1 + nr_of_cells
                 try:
                     self.destroy_wall_single(ind=ind_neigh, side=W)
                 except IndexError:
@@ -403,7 +408,7 @@ class Mazesolver_GUI:
             self.destroy_wall_single(ind=number-1, side=W)
 
             if not self.is_on_edge(number, side=W):
-                ind_neigh = number-1 - self.nr_of_cells
+                ind_neigh = number-1 - nr_of_cells
                 try:
                     self.destroy_wall_single(ind=ind_neigh, side=E)
                 except IndexError:
@@ -441,7 +446,7 @@ class Mazesolver_GUI:
         elif E == side:
             wall_ind = 1
             wall_ind_neigh = 3
-            ind_neigh = number-1 + self.nr_of_cells
+            ind_neigh = number-1 + nr_of_cells
         elif S == side:
             wall_ind = 2
             wall_ind_neigh = 0
@@ -449,7 +454,7 @@ class Mazesolver_GUI:
         elif W == side:
             wall_ind = 3
             wall_ind_neigh = 1
-            ind_neigh = number-1 - self.nr_of_cells
+            ind_neigh = number-1 - nr_of_cells
 
         curr_cell_wall = self.walls_printed[number-1][wall_ind]
 
@@ -537,7 +542,7 @@ class Mazesolver_GUI:
                 if wall != 0:
                     self.canvas.delete(wall)
 
-        self.walls_printed = [zerolistmaker(4) for i in range(self.nr_of_cells*self.nr_of_cells)]
+        self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
 
     def save_maze_layout(self):
         self.filename_write = filedialog.askopenfilename(initialdir = ".",title = "Select file",

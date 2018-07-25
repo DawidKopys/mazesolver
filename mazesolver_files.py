@@ -1,3 +1,8 @@
+from tkinter import *
+
+orientation_dict = {N:0, E:1, S:2, W:3}
+nr_of_cells = 16
+
 # function reading maze layout to file, save the information in Mazesolver.mazelayout
 def read_maze_layout(filename):
     try:
