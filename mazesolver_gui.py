@@ -33,6 +33,8 @@ class Mazesolver_GUI:
         self.grid_width  = 1
         self.walls_width = 9
         self.points_list = []
+        self.path_lines  = []
+        self.mm_env_walls  = []
         self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
         self.maze_edit_enable = False
         self.step = self.size / nr_of_cells
@@ -91,7 +93,7 @@ class Mazesolver_GUI:
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
-        self.b_mm_step        = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
+        self.b_mm_solve_maze        = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
@@ -100,7 +102,7 @@ class Mazesolver_GUI:
         self.b_place_mm.grid(column=0, row=3, sticky=E+W, pady=2)
         self.b_clear_maze.grid(column=0, row=7, sticky=E+W, pady=2)
         self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
-        self.b_mm_step.grid(column=0, row=9, sticky=E+W, pady=2)
+        self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -123,6 +125,8 @@ class Mazesolver_GUI:
 
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
+        self.run_in_progress = False
+
     def change_alg(self, *args):
         choice = self.algorithm_val.get()
         self.cb_algorithm.select_clear()
@@ -134,24 +138,35 @@ class Mazesolver_GUI:
     def place_mm(self, *args):
         self.print_mm()
         self.mm.read_environment(self.mazelayout)
-        self.b_mm_step.state(['!disabled'])
-        self.b_mm_step.focus()
+        self.b_mm_solve_maze.state(['!disabled'])
+        self.b_mm_solve_maze.focus()
         self.parent_root.bind('<Return>', self.solve_maze)
 
     def solve_maze(self, *args):
-        if self.mm.goal_reached == False:
-            threading.Timer(0.05, self.solve_maze).start()
+        if self.run_in_progress == False:
+            self.run_in_progress = True
             self.mm_step()
-        else:
-            self.draw_path()
+
+    def mm_reset(self):
+        self.mm.reset()
+        self.clear_maze_layout()
+        self.print_maze()
+        self.print_mm()
+        self.run_in_progress = False
+        self.b_mm_solve_maze.configure(text='Solve The Maze', command=self.solve_maze)
 
     def mm_step(self):
-        self.mm.step()
-        self.print_mm()
-        for side in orientation_dict.values():
-            if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-                self.print_wall_NSEW[side](self.mm.current_position,
-                                colour='red', w_width=self.walls_width/2)
+        if self.mm.goal_reached == False:
+            threading.Timer(0.05, self.mm_step).start()
+            self.mm.step()
+            self.print_mm()
+            for side in orientation_dict.values():
+                if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
+                    self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
+                                    colour='red', w_width=self.walls_width/2))
+        else:
+            self.draw_path()
+            self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
 
     def get_cell_coords(self, number):
         cell_x = self.cells_centres_flat[number][0]
@@ -160,10 +175,9 @@ class Mazesolver_GUI:
 
     def draw_path(self):
         path_coords = [self.get_cell_coords(cell) for cell in self.mm.visited_cells]
-        # print(path_coords)
         for i in range(len(path_coords)-1):
-            self.canvas.create_line(path_coords[i][0], path_coords[i][1],
-                                    path_coords[i+1][0], path_coords[i+1][1], fill='green', width=self.walls_width/2)
+            self.path_lines.append(self.canvas.create_line(path_coords[i][0], path_coords[i][1],
+                                path_coords[i+1][0], path_coords[i+1][1], fill='green', width=self.walls_width/2))
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
@@ -587,11 +601,23 @@ class Mazesolver_GUI:
 
         self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
 
+        self.canvas.delete(self.mm_polygon)
+        if self.path_lines != []:
+            for line in self.path_lines:
+                self.canvas.delete(line)
+
+        if self.mm_env_walls != []:
+            for wall in self.mm_env_walls:
+                self.canvas.delete(wall)
+
     def save_maze_layout(self):
         self.filename_write = filedialog.askopenfilename(initialdir = ".",title = "Select file",
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
         if self.filename_write != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
             write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
+
+    def __del__(self):
+        parent_root.destroy()
 
 root = Tk()
 mazesolver = Mazesolver_GUI(root)

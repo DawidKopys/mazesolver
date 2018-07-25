@@ -15,7 +15,7 @@ class Micromouse:
     a = ((nr_of_cells**2)/2)-1
     goal_cells_list = [int(a-(nr_of_cells/2)), int(a-(nr_of_cells/2)+1), int(a+(nr_of_cells/2)), int(a+(nr_of_cells/2)+1)]
     # goal_cells_list = [28, 29, 36, 37]
-    alg = 'R'
+    alg = 'L'
 
     def __init__(self, start_pos=0, start_orientation=S):
         # mapa otoczenia
@@ -30,8 +30,10 @@ class Micromouse:
         self.state = INSPECTION
 
         self.visited_cells = []
-
         self.goal_reached = False
+
+        self.start_pos = start_pos
+        self.start_orientation = start_orientation
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -106,6 +108,7 @@ class Micromouse:
         if self.current_position in Micromouse.goal_cells_list:
             print('!!!YOU WON!!!')
             self.goal_reached = True
+            self.run_in_progress = False
 
     def turn_right(self):
         self.current_orientation = Micromouse.right_turn_dict[self.current_orientation]
@@ -121,8 +124,14 @@ class Micromouse:
 
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):
-
         self.environment = [[cell[0], cell[1], cell[2], cell[3]] for cell in mazelayout]
+
+    def reset(self):
+        self.mazelayout_mm = [[0, 0, 0, 0, 'Not visited'] for i in range(nr_of_cells*nr_of_cells)]
+        self.current_position = self.start_pos
+        self.current_orientation = self.start_orientation
+        self.visited_cells = []
+        self.goal_reached = False
 
         # for row_Micromouse, row_Mazesolver in zip(self.mazelayout_mm, mazelayout):
         #     print(row_Micromouse, row_Mazesolver)
