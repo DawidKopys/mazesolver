@@ -19,6 +19,7 @@ def print_wall_decorate(func):
 
 
 class Mazesolver_GUI:
+    step_time = 0.04
 
     def __init__(self, parent_root):
         self.parent_root = parent_root
@@ -79,7 +80,7 @@ class Mazesolver_GUI:
         self.spaceframe1 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
         self.spaceframe1.grid(column=0, row=6, sticky=E+W)
         self.spaceframe2 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
-        self.spaceframe2.grid(column=0, row=10, sticky=S+E+W)
+        self.spaceframe2.grid(column=0, row=11, sticky=S+E+W)
 
         self.canvas = Canvas(self.mazeframe, width=self.size + 2*self.offset, height=self.size + 2*self.offset)
         self.canvas.configure(background='#d9dde2')
@@ -93,8 +94,9 @@ class Mazesolver_GUI:
         self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
         self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
         self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
-        self.b_mm_solve_maze        = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
+        self.b_mm_solve_maze  = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
+        self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -103,6 +105,7 @@ class Mazesolver_GUI:
         self.b_clear_maze.grid(column=0, row=7, sticky=E+W, pady=2)
         self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
         self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
+        self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -143,9 +146,23 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Return>', self.solve_maze)
 
     def solve_maze(self, *args):
-        if self.run_in_progress == False:
-            self.run_in_progress = True
-            self.mm_step()
+        self.mm_step()
+        self.b_pauze_mm.state(['!disabled'])
+        self.disable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
+        self.b_pauze_mm.configure(text='Pauze', command=self.pauze_the_alg)
+
+    def pauze_the_alg(self):
+        self.mm_step_timer.cancel()
+        self.b_pauze_mm.configure(text='Resume', command=self.resume_the_alg)
+        self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
+        self.b_mm_solve_maze.state(['!disabled'])
+
+    def resume_the_alg(self):
+        self.mm_step_timer = threading.Timer(0.5, self.mm_step)
+        self.mm_step_timer.start()
+        self.b_pauze_mm.configure(text='Pauze', command=self.pauze_the_alg)
+        self.b_mm_solve_maze.configure(text='Solve The Maze', command=self.solve_maze)
+        self.b_mm_solve_maze.state(['disabled'])
 
     def mm_reset(self):
         self.mm.reset()
@@ -154,10 +171,25 @@ class Mazesolver_GUI:
         self.print_mm()
         self.run_in_progress = False
         self.b_mm_solve_maze.configure(text='Solve The Maze', command=self.solve_maze)
+        self.enable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
+        self.b_pauze_mm.state(['disabled'])
+
+    def disable_w_except(self, parent, widget_exception=None):
+        children = all_children(parent)
+        for child in children:
+            if child != widget_exception:
+                child.state(['disabled'])
+
+    def enable_w_except(self, parent, widget_exception=None):
+        children = all_children(parent)
+        for child in children:
+            if child != widget_exception:
+                child.state(['!disabled'])
 
     def mm_step(self):
         if self.mm.goal_reached == False:
-            threading.Timer(0.05, self.mm_step).start()
+            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
+            self.mm_step_timer.start()
             self.mm.step()
             self.print_mm()
             for side in orientation_dict.values():
@@ -167,6 +199,8 @@ class Mazesolver_GUI:
         else:
             self.draw_path()
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
+            self.b_mm_solve_maze.state(['!disabled'])
+            self.b_pauze_mm.state(['disabled'])
 
     def get_cell_coords(self, number):
         cell_x = self.cells_centres_flat[number][0]
@@ -181,17 +215,24 @@ class Mazesolver_GUI:
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
+            # enable maze editing
             self.maze_edit_enable = True
             self.b_edit_maze.configure(text='Exit Edit')
             self.canvas.bind('<Double-Button-1>', self.find_closest_cell)
             self.b_edit_maze.state(['pressed'])
             self.canvas.configure(background='white')
+            self.disable_w_except(parent=self.menuframe, widget_exception=self.b_edit_maze)
         elif self.maze_edit_enable == True:
+            # disable maze editing
             self.maze_edit_enable = False
             self.b_edit_maze.configure(text='Edit Maze')
             self.canvas.unbind('<Double-Button-1>')
             self.b_edit_maze.state(['!pressed'])
             self.canvas.configure(background='#d9dde2')
+            #update Micromouse maze environment
+            self.mazelayout = prepare_maze_layout_list(self.walls_printed)
+            self.mm.read_environment(self.mazelayout)
+            self.enable_w_except(parent=self.menuframe)
 
     # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):
@@ -615,9 +656,6 @@ class Mazesolver_GUI:
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
         if self.filename_write != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
             write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
-
-    def __del__(self):
-        parent_root.destroy()
 
 root = Tk()
 mazesolver = Mazesolver_GUI(root)
