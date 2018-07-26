@@ -15,7 +15,7 @@ class Micromouse:
     a = ((nr_of_cells**2)/2)-1
     goal_cells_list = [int(a-(nr_of_cells/2)), int(a-(nr_of_cells/2)+1), int(a+(nr_of_cells/2)), int(a+(nr_of_cells/2)+1)]
     # goal_cells_list = [28, 29, 36, 37]
-    alg = 'L'
+    alg = 'B'
 
     def __init__(self, start_pos=0, start_orientation=S):
         # mapa otoczenia
@@ -34,6 +34,11 @@ class Micromouse:
 
         self.start_pos = start_pos
         self.start_orientation = start_orientation
+
+        self.bellman_ford_dist_counter = 0
+        self.bellman_ford_distance = [0]*(nr_of_cells**2)
+        self.bf_initialized = False
+        self.bf_ends = [0]
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -54,9 +59,7 @@ class Micromouse:
         except IndexError:
             self.visited_cells.append(self.current_position)
         if self.mazelayout_mm[self.current_position][4] == 'Not visited':
-            # print(self.mazelayout_mm[self.current_position])
             self.update_cell()
-            # print(self.mazelayout_mm[self.current_position])
         else:
             # move/turn
             # todo: function maker with this alg on __init__
@@ -85,12 +88,48 @@ class Micromouse:
                     self.turn_back()
 
 
+    def step_bf(self):
+        # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
+        if self.bf_initialized == False:
+            self.bf_initialized = True
+            self.bellman_ford_ends = [0]
+            for cell, cell2 in zip(self.mazelayout_mm, self.environment):
+                cell[0:4] = cell2[0:4]
+
+        self.bellman_ford_dist_counter += 1
+
+        new_bf_ends = []
+        for end in self.bf_ends:
+            neighbours = self.find_neighbours_bf()
+
+            print('neighbours = {}'.format(neighbours))
+            for neigh in neighbours:
+                self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+                self.bf_ends
+
+
+    def find_neighbours_bf(self):
+        neighbours = []
+        for side in N+S+E+W:
+            if self.can_go_NSEW(side):
+                neighbours.append(self.current_position - Micromouse.distance_dict[side])
+
+        return neighbours
+
     def can_go_x(self, turn_dict):
         side = orientation_dict[turn_dict[self.current_orientation]]
         if self.mazelayout_mm[self.current_position][side] == 1:
             return False
         else:
             return True
+
+    def can_go_NSEW(self, side):
+        if side not in orientation_dict.keys():
+            print('error kurwa')
+        else:
+            print('good')
+            print(self.mazelayout_mm[self.current_position][orientation_dict[side]])
+            return self.mazelayout_mm[self.current_position][orientation_dict[side]]
 
     def can_go_right(self):
         return self.can_go_x(Micromouse.right_turn_dict)

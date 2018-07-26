@@ -1,4 +1,4 @@
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, font
 from mazesolver_files import *
 from mazesolver_alg import Micromouse
 
@@ -19,7 +19,7 @@ def print_wall_decorate(func):
 
 
 class Mazesolver_GUI:
-    step_time = 0.04
+    step_time = 1
 
     def __init__(self, parent_root):
         self.parent_root = parent_root
@@ -97,6 +97,7 @@ class Mazesolver_GUI:
         self.b_mm_solve_maze  = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
+        self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -106,12 +107,13 @@ class Mazesolver_GUI:
         self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
         self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
         self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
+        self.b_bf_step.grid(column=0, row=11, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
         self.cb_algorithm = ttk.Combobox(self.menuframe, textvariable=self.algorithm_val, state='readonly')
-        self.cb_algorithm['values'] = ['Left-hand Rule', 'Right-hand Rule']
-        self.cb_algorithm.current(0)
+        self.cb_algorithm['values'] = ['Left-hand Rule', 'Right-hand Rule', 'Bellman-Ford']
+        self.cb_algorithm.current(2)
 
         label_algorithm.grid(row=4, pady=2)
         self.cb_algorithm.grid(row=5, pady=4, padx=10)
@@ -128,7 +130,8 @@ class Mazesolver_GUI:
 
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
-        self.run_in_progress = False
+        self.bf_font = font.Font(size=20, weight='bold')
+
 
     def change_alg(self, *args):
         choice = self.algorithm_val.get()
@@ -137,6 +140,8 @@ class Mazesolver_GUI:
             Micromouse.alg = 'L'
         elif choice == 'Right-hand Rule':
             Micromouse.alg = 'R'
+        elif choice == 'Bellman-Ford':
+            Micromouse.alg = 'B'
 
     def place_mm(self, *args):
         self.print_mm()
@@ -169,7 +174,6 @@ class Mazesolver_GUI:
         self.clear_maze_layout()
         self.print_maze()
         self.print_mm()
-        self.run_in_progress = False
         self.b_mm_solve_maze.configure(text='Solve The Maze', command=self.solve_maze)
         self.enable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
         self.b_pauze_mm.state(['disabled'])
@@ -186,7 +190,20 @@ class Mazesolver_GUI:
             if child != widget_exception:
                 child.state(['!disabled'])
 
+    def mm_step_bf(self):
+
+        self.mm.step_bf()
+        print(self.mm.bellman_ford_distance)
+        for i in range(len(self.mm.bellman_ford_distance)):
+            if self.mm.bellman_ford_distance[i] != 0:
+                coords = self.get_cell_coords(i)
+                number = self.mm.bellman_ford_distance[i]
+                self.canvas.create_text(coords[0], coords[1], text=str(number), fill='red', font=self.bf_font)
+
+
+
     def mm_step(self):
+        print('czemu to tu kurwa jest')
         if self.mm.goal_reached == False:
             self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
             self.mm_step_timer.start()
