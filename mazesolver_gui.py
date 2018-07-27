@@ -120,6 +120,7 @@ class Mazesolver_GUI:
 
         self.cb_algorithm.bind('<<ComboboxSelected>>', self.change_alg)
 
+        self.cell_numbers = []
         self.print_outline()
         self.create_cells_points()
         self.print_cell_number(numbers=all)
@@ -130,7 +131,7 @@ class Mazesolver_GUI:
 
         self.print_wall_NSEW = [self.print_wall_N, self.print_wall_E, self.print_wall_S, self.print_wall_W]
 
-        self.bf_font = font.Font(size=20, weight='bold')
+        self.bf_font = font.Font(size=14, weight='bold')
 
 
     def change_alg(self, *args):
@@ -191,9 +192,12 @@ class Mazesolver_GUI:
                 child.state(['!disabled'])
 
     def mm_step_bf(self):
+        if len(self.cell_numbers) != 0:
+            for number in self.cell_numbers:
+                self.canvas.delete(number)
+            self.cell_numbers = []
 
         self.mm.step_bf()
-        # print(self.mm.bellman_ford_distance)
         for i in range(len(self.mm.bellman_ford_distance)):
             if self.mm.bellman_ford_distance[i] != 0:
                 coords = self.get_cell_coords(i)
@@ -375,7 +379,9 @@ class Mazesolver_GUI:
         i = 1 #todo: change back to 0
         for row in range(nr_of_cells):
             for col in range(nr_of_cells):
-                self.canvas.create_text(self.cells_centres[row][col][0], self.cells_centres[row][col][1], text=str(i))
+                id = self.canvas.create_text(self.cells_centres[row][col][0],
+                                                self.cells_centres[row][col][1], text=str(i))
+                self.cell_numbers.append(id)
                 i = i + 1
 
     # funkcja rysuje numer komórki o podanym numerze
@@ -389,8 +395,8 @@ class Mazesolver_GUI:
         elif numbers == 'all':
             numbers = range(1, nr_of_cells**2+1)
         for number in numbers:
-            self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
-
+            id = self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
+            self.cell_numbers.append(id)
     # funkcja rysuje górną ścianę w komórce o podanym numerze
     # param:
     #   @cell_coord_x - koordynata x komórki
