@@ -200,8 +200,6 @@ class Mazesolver_GUI:
                 number = self.mm.bellman_ford_distance[i]
                 self.canvas.create_text(coords[0], coords[1], text=str(number), fill='red', font=self.bf_font)
 
-
-
     def mm_step(self):
         if self.mm.goal_reached == False:
             self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)

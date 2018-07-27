@@ -100,12 +100,10 @@ class Micromouse:
 
         new_bf_ends = []
         for end in self.bf_ends:
-            neighbours = self.find_neighbours_bf()
-
-            print('neighbours = {}'.format(neighbours))
+            neighbours = self.find_neighbours_bf(end)
+            print('neighbours of {}: {}'.format(end, neighbours))
             for neigh in neighbours:
                 self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-                print('neigh = {}'.format(neigh))
                 new_bf_ends.append(neigh)
 
         self.bf_ends = new_bf_ends
@@ -113,13 +111,48 @@ class Micromouse:
 
 
 
-    def find_neighbours_bf(self):
+    def find_neighbours_bf(self, cell):
         neighbours = []
-        for side in N+S+E+W:
-            if self.can_go_NSEW(side):
-                neighbours.append(self.current_position - Micromouse.distance_dict[side])
+        print('self.mazelayout_mm[cell] = self.mazelayout_mm[{}] = {}'.format(cell, self.mazelayout_mm[cell]))
+
+        if self.can_go_NSEW_bf(N, cell):
+            # neigh_nr = cell + Micromouse.distance_dict[N]
+            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[N]):
+                print('{} can go N'.format(cell))
+                neighbours.append(cell + Micromouse.distance_dict[N])
+        if self.can_go_NSEW_bf(S, cell):
+            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[S]):
+                print('{} can go S'.format(cell))
+                neighbours.append(cell + Micromouse.distance_dict[S])
+        if self.can_go_NSEW_bf(E, cell):
+            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[E]):
+                print('{} can go E'.format(cell))
+                neighbours.append(cell + Micromouse.distance_dict[E])
+        if self.can_go_NSEW_bf(W, cell):
+            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[W]):
+                print('{} can go W'.format(cell))
+                neighbours.append(cell + Micromouse.distance_dict[W])
 
         return neighbours
+
+    def can_go_NSEW_bf(self, side, cell=None):
+        if cell == None:
+            cell = self.current_position
+        if side not in orientation_dict.keys():
+            print('error kurwa')
+        else:
+            if self.mazelayout_mm[cell][orientation_dict[side]] == 1:
+                return False
+            else:
+                return True
+
+    def is_valid_cell_nr(self, cell_nr):
+        if cell_nr >= 0 and cell_nr <= 256:
+            print('cell_nr {} is valid cell nr'.format(cell_nr))
+            return True
+        else:
+            print('cell_nr {} is not valid cell nr'.format(cell_nr))
+            return False
 
     def can_go_x(self, turn_dict):
         side = orientation_dict[turn_dict[self.current_orientation]]
@@ -127,14 +160,6 @@ class Micromouse:
             return False
         else:
             return True
-
-    def can_go_NSEW(self, side):
-        if side not in orientation_dict.keys():
-            print('error kurwa')
-        else:
-            print('good')
-            print(self.mazelayout_mm[self.current_position][orientation_dict[side]])
-            return self.mazelayout_mm[self.current_position][orientation_dict[side]]
 
     def can_go_right(self):
         return self.can_go_x(Micromouse.right_turn_dict)
