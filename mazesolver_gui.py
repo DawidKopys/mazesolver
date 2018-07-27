@@ -98,6 +98,7 @@ class Mazesolver_GUI:
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
         self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf)
+        self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -107,7 +108,8 @@ class Mazesolver_GUI:
         self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
         self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
         self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
-        self.b_bf_step.grid(column=0, row=11, sticky=E+W, pady=2)
+        self.b_bf_step.grid(column=0, row=12, sticky=E+W, pady=2)
+        self.b_bf_delete_nrs.grid(column=0, row=13, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -197,6 +199,13 @@ class Mazesolver_GUI:
             for number in self.cell_numbers:
                 self.canvas.delete(number)
             self.cell_numbers = []
+
+    def delete_cell_numbers_bf(self):
+        if len(self.cell_numbers_bf) != 0:
+            for number in self.cell_numbers_bf:
+                if number != 0:
+                    self.canvas.delete(number)
+            self.cell_numbers_bf = [0]*(nr_of_cells**2)
 
     def mm_step_bf(self):
         self.delete_cell_numbers()
