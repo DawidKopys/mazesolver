@@ -113,25 +113,23 @@ class Micromouse:
 
     def find_neighbours_bf(self, cell):
         neighbours = []
-        print('self.mazelayout_mm[cell] = self.mazelayout_mm[{}] = {}'.format(cell, self.mazelayout_mm[cell]))
 
         if self.can_go_NSEW_bf(N, cell):
-            # neigh_nr = cell + Micromouse.distance_dict[N]
-            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[N]):
-                print('{} can go N'.format(cell))
-                neighbours.append(cell + Micromouse.distance_dict[N])
+            neigh_nr = cell + Micromouse.distance_dict[N]
+            if self.is_valid_cell_nr(neigh_nr):
+                neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(S, cell):
-            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[S]):
-                print('{} can go S'.format(cell))
-                neighbours.append(cell + Micromouse.distance_dict[S])
+            neigh_nr = cell + Micromouse.distance_dict[S]
+            if self.is_valid_cell_nr(neigh_nr):
+                neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(E, cell):
-            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[E]):
-                print('{} can go E'.format(cell))
-                neighbours.append(cell + Micromouse.distance_dict[E])
+            neigh_nr = cell + Micromouse.distance_dict[E]
+            if self.is_valid_cell_nr(neigh_nr):
+                neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(W, cell):
-            if self.is_valid_cell_nr(cell + Micromouse.distance_dict[W]):
-                print('{} can go W'.format(cell))
-                neighbours.append(cell + Micromouse.distance_dict[W])
+            neigh_nr = cell + Micromouse.distance_dict[W]
+            if self.is_valid_cell_nr(neigh_nr):
+                neighbours.append(neigh_nr)
 
         return neighbours
 
