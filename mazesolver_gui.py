@@ -121,6 +121,7 @@ class Mazesolver_GUI:
         self.cb_algorithm.bind('<<ComboboxSelected>>', self.change_alg)
 
         self.cell_numbers = []
+        self.cell_numbers_bf = [0]*(nr_of_cells**2)
         self.print_outline()
         self.create_cells_points()
         self.print_cell_number(numbers=all)
@@ -191,18 +192,19 @@ class Mazesolver_GUI:
             if child != widget_exception:
                 child.state(['!disabled'])
 
-    def mm_step_bf(self):
+    def delete_cell_numbers(self):
         if len(self.cell_numbers) != 0:
             for number in self.cell_numbers:
                 self.canvas.delete(number)
             self.cell_numbers = []
 
+    def mm_step_bf(self):
+        self.delete_cell_numbers()
+
         self.mm.step_bf()
         for i in range(len(self.mm.bellman_ford_distance)):
             if self.mm.bellman_ford_distance[i] != 0:
-                coords = self.get_cell_coords(i)
-                number = self.mm.bellman_ford_distance[i]
-                self.canvas.create_text(coords[0], coords[1], text=str(number), fill='red', font=self.bf_font)
+                self.print_cell_number_bf(i)
 
     def mm_step(self):
         if self.mm.goal_reached == False:
@@ -397,6 +399,15 @@ class Mazesolver_GUI:
         for number in numbers:
             id = self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
             self.cell_numbers.append(id)
+
+    def print_cell_number_bf(self, number):
+        if self.cell_numbers_bf[number] == 0:
+            cell_text = self.mm.bellman_ford_distance[number]
+            id = self.canvas.create_text(self.cells_centres_flat[number][0],
+                        self.cells_centres_flat[number][1], text=str(cell_text),
+                        fill='red', font=self.bf_font)
+            self.cell_numbers_bf[number] = id
+
     # funkcja rysuje górną ścianę w komórce o podanym numerze
     # param:
     #   @cell_coord_x - koordynata x komórki
