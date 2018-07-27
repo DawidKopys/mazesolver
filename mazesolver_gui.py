@@ -193,7 +193,7 @@ class Mazesolver_GUI:
     def mm_step_bf(self):
 
         self.mm.step_bf()
-        print(self.mm.bellman_ford_distance)
+        # print(self.mm.bellman_ford_distance)
         for i in range(len(self.mm.bellman_ford_distance)):
             if self.mm.bellman_ford_distance[i] != 0:
                 coords = self.get_cell_coords(i)

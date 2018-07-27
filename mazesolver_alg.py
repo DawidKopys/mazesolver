@@ -101,15 +101,11 @@ class Micromouse:
         new_bf_ends = []
         for end in self.bf_ends:
             neighbours = self.find_neighbours_bf(end)
-            print('neighbours of {}: {}'.format(end, neighbours))
             for neigh in neighbours:
                 self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
                 new_bf_ends.append(neigh)
 
         self.bf_ends = new_bf_ends
-        print('self.bf_ends = {}'.format(self.bf_ends))
-
-
 
     def find_neighbours_bf(self, cell):
         neighbours = []
@@ -117,19 +113,23 @@ class Micromouse:
         if self.can_go_NSEW_bf(N, cell):
             neigh_nr = cell + Micromouse.distance_dict[N]
             if self.is_valid_cell_nr(neigh_nr):
-                neighbours.append(neigh_nr)
+                if self.bellman_ford_distance[neigh_nr] == 0:
+                    neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(S, cell):
             neigh_nr = cell + Micromouse.distance_dict[S]
             if self.is_valid_cell_nr(neigh_nr):
-                neighbours.append(neigh_nr)
+                if self.bellman_ford_distance[neigh_nr] == 0:
+                    neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(E, cell):
             neigh_nr = cell + Micromouse.distance_dict[E]
             if self.is_valid_cell_nr(neigh_nr):
-                neighbours.append(neigh_nr)
+                if self.bellman_ford_distance[neigh_nr] == 0:
+                    neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(W, cell):
             neigh_nr = cell + Micromouse.distance_dict[W]
             if self.is_valid_cell_nr(neigh_nr):
-                neighbours.append(neigh_nr)
+                if self.bellman_ford_distance[neigh_nr] == 0:
+                    neighbours.append(neigh_nr)
 
         return neighbours
 
@@ -145,11 +145,9 @@ class Micromouse:
                 return True
 
     def is_valid_cell_nr(self, cell_nr):
-        if cell_nr >= 0 and cell_nr <= 256:
-            print('cell_nr {} is valid cell nr'.format(cell_nr))
+        if cell_nr > 0 and cell_nr <= 256:
             return True
         else:
-            print('cell_nr {} is not valid cell nr'.format(cell_nr))
             return False
 
     def can_go_x(self, turn_dict):
