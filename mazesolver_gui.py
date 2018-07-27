@@ -203,7 +203,6 @@ class Mazesolver_GUI:
 
 
     def mm_step(self):
-        print('czemu to tu kurwa jest')
         if self.mm.goal_reached == False:
             self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
             self.mm_step_timer.start()

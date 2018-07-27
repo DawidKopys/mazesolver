@@ -105,7 +105,12 @@ class Micromouse:
             print('neighbours = {}'.format(neighbours))
             for neigh in neighbours:
                 self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-                self.bf_ends
+                print('neigh = {}'.format(neigh))
+                new_bf_ends.append(neigh)
+
+        self.bf_ends = new_bf_ends
+        print('self.bf_ends = {}'.format(self.bf_ends))
+
 
 
     def find_neighbours_bf(self):
