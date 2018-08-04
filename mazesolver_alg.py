@@ -36,9 +36,11 @@ class Micromouse:
         self.start_orientation = start_orientation
 
         self.bellman_ford_dist_counter = 0
-        self.bellman_ford_distance = [0]*(nr_of_cells**2)
+        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
         self.bf_initialized = False
         self.bf_ends = [0]
+        self.bf_maze_filled = False
+        self.bf_path = []
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -87,14 +89,28 @@ class Micromouse:
                 elif self.can_go_back() == True:
                     self.turn_back()
 
+    def reset_bf(self):
+        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
+        self.bf_ends = [0]
+        self.bellman_ford_dist_counter = 0
+        self.bf_initialized = False
+        self.bf_maze_filled = False
+        self.bf_path = []
+
 
     def step_bf(self):
         # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
         if self.bf_initialized == False:
             self.bf_initialized = True
             self.bellman_ford_ends = [0]
-            for cell, cell2 in zip(self.mazelayout_mm, self.environment):
-                cell[0:4] = cell2[0:4]
+            self.bellman_ford_distance[0] = 0
+            # temporary, pozniej dodamy przeszukiwanie, na razie znamy cały labirynt
+            self.bf_read_whole_maze()
+
+        self.is_maze_filled()
+        if self.bf_maze_filled == True:
+            self.bf_choose_path()
+            print(self.bf_path)
 
         self.bellman_ford_dist_counter += 1
 
@@ -107,28 +123,90 @@ class Micromouse:
 
         self.bf_ends = new_bf_ends
 
-    def find_neighbours_bf(self, cell):
+    def bf_choose_path(self):
+        goal_cell_nr = self.find_entrance_to_finish()
+        self.bf_path.append(goal_cell_nr)
+
+        last_cell = goal_cell_nr
+
+        while last_cell != 0:
+            last_cell = self.bf_path[len(self.bf_path)-1]
+            last_cell_dist = self.bellman_ford_distance[last_cell]
+            last_cell_neighs = self.find_neighbours_bf(last_cell,
+                                    ignore_cells_with_distance=False)
+
+            for neigh in last_cell_neighs:
+                if self.bellman_ford_distance[neigh] == last_cell_dist - 1:
+                    self.bf_path.append(neigh)
+
+
+    def bf_read_whole_maze(self):
+        for cell, cell2 in zip(self.mazelayout_mm, self.environment):
+            cell[0:4] = cell2[0:4]
+
+    def find_entrance_to_finish(self):
+        cell = Micromouse.goal_cells_list[0]
+        for side in [N, W]:
+            if self.can_go_NSEW_bf(side, cell):
+                return cell
+
+        cell = Micromouse.goal_cells_list[1]
+        for side in [S, W]:
+            if self.can_go_NSEW_bf(side, cell):
+                return cell
+
+        cell = Micromouse.goal_cells_list[2]
+        for side in [N, E]:
+            if self.can_go_NSEW_bf(side, cell):
+                return cell
+
+        cell = Micromouse.goal_cells_list[3]
+        for side in [S, E]:
+            if self.can_go_NSEW_bf(side, cell):
+                return cell
+
+        # if we cant reach goal
+        return 0
+
+    def is_maze_filled(self):
+        if -1 not in self.bellman_ford_distance:
+            self.bf_maze_filled = True #dla gui
+            print("Maze filled"),
+
+    def find_neighbours_bf(self, cell, ignore_cells_with_distance=True):
         neighbours = []
 
         if self.can_go_NSEW_bf(N, cell):
             neigh_nr = cell + Micromouse.distance_dict[N]
             if self.is_valid_cell_nr(neigh_nr):
-                if self.bellman_ford_distance[neigh_nr] == 0:
+                if ignore_cells_with_distance == True:
+                    if self.bellman_ford_distance[neigh_nr] == -1:
+                        neighbours.append(neigh_nr)
+                else:
                     neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(S, cell):
             neigh_nr = cell + Micromouse.distance_dict[S]
             if self.is_valid_cell_nr(neigh_nr):
-                if self.bellman_ford_distance[neigh_nr] == 0:
+                if ignore_cells_with_distance == True:
+                    if self.bellman_ford_distance[neigh_nr] == -1:
+                        neighbours.append(neigh_nr)
+                else:
                     neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(E, cell):
             neigh_nr = cell + Micromouse.distance_dict[E]
             if self.is_valid_cell_nr(neigh_nr):
-                if self.bellman_ford_distance[neigh_nr] == 0:
+                if ignore_cells_with_distance == True:
+                    if self.bellman_ford_distance[neigh_nr] == -1:
+                        neighbours.append(neigh_nr)
+                else:
                     neighbours.append(neigh_nr)
         if self.can_go_NSEW_bf(W, cell):
             neigh_nr = cell + Micromouse.distance_dict[W]
             if self.is_valid_cell_nr(neigh_nr):
-                if self.bellman_ford_distance[neigh_nr] == 0:
+                if ignore_cells_with_distance == True:
+                    if self.bellman_ford_distance[neigh_nr] == -1:
+                        neighbours.append(neigh_nr)
+                else:
                     neighbours.append(neigh_nr)
 
         return neighbours
@@ -145,7 +223,7 @@ class Micromouse:
                 return True
 
     def is_valid_cell_nr(self, cell_nr):
-        if cell_nr > 0 and cell_nr <= 256:
+        if cell_nr >= 0 and cell_nr <= 256:
             return True
         else:
             return False

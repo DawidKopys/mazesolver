@@ -19,7 +19,7 @@ def print_wall_decorate(func):
 
 
 class Mazesolver_GUI:
-    step_time = 1
+    step_time = 0.05
 
     def __init__(self, parent_root):
         self.parent_root = parent_root
@@ -206,14 +206,20 @@ class Mazesolver_GUI:
                 if number != 0:
                     self.canvas.delete(number)
             self.cell_numbers_bf = [0]*(nr_of_cells**2)
+            self.mm.reset_bf()
+            self.delete_path()
+
 
     def mm_step_bf(self):
         self.delete_cell_numbers()
 
-        self.mm.step_bf()
-        for i in range(len(self.mm.bellman_ford_distance)):
-            if self.mm.bellman_ford_distance[i] != 0:
-                self.print_cell_number_bf(i)
+        if self.mm.bf_maze_filled == False:
+            self.mm.step_bf()
+            for i in range(len(self.mm.bellman_ford_distance)):
+                if self.mm.bellman_ford_distance[i] != -1:
+                    self.print_cell_number_bf(i)
+        else:
+            self.draw_path(self.mm.bf_path)
 
     def mm_step(self):
         if self.mm.goal_reached == False:
@@ -226,7 +232,7 @@ class Mazesolver_GUI:
                     self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
                                     colour='red', w_width=self.walls_width/2))
         else:
-            self.draw_path()
+            self.draw_path(self.mm.visited_cells)
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
             self.b_mm_solve_maze.state(['!disabled'])
             self.b_pauze_mm.state(['disabled'])
@@ -236,8 +242,9 @@ class Mazesolver_GUI:
         cell_y = self.cells_centres_flat[number][1]
         return [cell_x, cell_y]
 
-    def draw_path(self):
-        path_coords = [self.get_cell_coords(cell) for cell in self.mm.visited_cells]
+    def draw_path(self, cells_list):
+        # path_coords = [self.get_cell_coords(cell) for cell in self.mm.visited_cells]
+        path_coords = [self.get_cell_coords(cell) for cell in cells_list]
         for i in range(len(path_coords)-1):
             self.path_lines.append(self.canvas.create_line(path_coords[i][0], path_coords[i][1],
                                 path_coords[i+1][0], path_coords[i+1][1], fill='green', width=self.walls_width/2))
@@ -262,6 +269,8 @@ class Mazesolver_GUI:
             self.mazelayout = prepare_maze_layout_list(self.walls_printed)
             self.mm.read_environment(self.mazelayout)
             self.enable_w_except(parent=self.menuframe)
+            if Micromouse.alg == 'B':
+                self.mm.bf_read_whole_maze()
 
     # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):
@@ -674,6 +683,14 @@ class Mazesolver_GUI:
         except ValueError:
             print('ValueError file')
 
+    def delete_path(self):
+        if self.path_lines != []:
+            for line in self.path_lines:
+                self.canvas.delete(line)
+
+    def delete_mm_polygon(self):
+        self.canvas.delete(self.mm_polygon)
+
     def clear_maze_layout(self, *args):
         for cell in self.walls_printed:
             for wall in cell:
@@ -682,10 +699,8 @@ class Mazesolver_GUI:
 
         self.walls_printed = [zerolistmaker(4) for i in range(nr_of_cells*nr_of_cells)]
 
-        self.canvas.delete(self.mm_polygon)
-        if self.path_lines != []:
-            for line in self.path_lines:
-                self.canvas.delete(line)
+        self.delete_mm_polygon()
+        self.delete_path()
 
         if self.mm_env_walls != []:
             for wall in self.mm_env_walls:
