@@ -219,7 +219,26 @@ class Mazesolver_GUI:
                 if self.mm.bellman_ford_distance[i] != -1:
                     self.print_cell_number_bf(i)
         else:
-            self.draw_path(self.mm.bf_path)
+            pass
+            if self.are_there_two_paths() == True:
+                list_to_draw = [cell[0] for cell in self.mm.bf_path]
+                self.draw_path(list_to_draw)
+                list_to_draw = []
+                for cell in self.mm.bf_path:
+                    if len(cell) == 2:
+                        list_to_draw.append(cell[1])
+                    elif len(cell) == 1:
+                        list_to_draw.append(cell[0])
+                self.draw_path(list_to_draw, colour='magenta')
+            else:
+                list_to_draw = [cell[0] for cell in self.mm.bf_path]
+                self.draw_path(list_to_draw)
+
+    def are_there_two_paths(self):
+        for cell in self.mm.bf_path:
+            if len(cell) > 1:
+                return True
+        return False
 
     def mm_step(self):
         if self.mm.goal_reached == False:
@@ -242,12 +261,12 @@ class Mazesolver_GUI:
         cell_y = self.cells_centres_flat[number][1]
         return [cell_x, cell_y]
 
-    def draw_path(self, cells_list):
+    def draw_path(self, cells_list, colour='black'):
         # path_coords = [self.get_cell_coords(cell) for cell in self.mm.visited_cells]
         path_coords = [self.get_cell_coords(cell) for cell in cells_list]
         for i in range(len(path_coords)-1):
             self.path_lines.append(self.canvas.create_line(path_coords[i][0], path_coords[i][1],
-                                path_coords[i+1][0], path_coords[i+1][1], fill='green', width=self.walls_width/2))
+                                path_coords[i+1][0], path_coords[i+1][1], fill=colour, width=self.walls_width/2))
 
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:

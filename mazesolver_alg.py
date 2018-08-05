@@ -109,8 +109,7 @@ class Micromouse:
 
         self.is_maze_filled()
         if self.bf_maze_filled == True:
-            self.bf_choose_path()
-            print(self.bf_path)
+            self.bf_find_path()
 
         self.bellman_ford_dist_counter += 1
 
@@ -123,21 +122,38 @@ class Micromouse:
 
         self.bf_ends = new_bf_ends
 
-    def bf_choose_path(self):
+    def bf_find_path(self):
         goal_cell_nr = self.find_entrance_to_finish()
-        self.bf_path.append(goal_cell_nr)
+        self.bf_path.append([goal_cell_nr])
 
-        last_cell = goal_cell_nr
+        last_cell = self.bf_path[len(self.bf_path)-1]
 
-        while last_cell != 0:
+        while [0] not in self.bf_path:
+            way = []
+            for cell, i in zip(last_cell, range(len(last_cell))):
+                cell = self.bf_path[len(self.bf_path)-1][i]
+                cell_dist = self.bellman_ford_distance[cell]
+                cell_neighs = self.find_neighbours_bf(cell,
+                                        ignore_cells_with_distance=False)
+
+                ways_to_go = []
+                for neigh in cell_neighs:
+                    if self.bellman_ford_distance[neigh] == cell_dist - 1:
+                        ways_to_go.append(neigh)
+
+                if len(ways_to_go) == 1:
+                    way.append(ways_to_go[0])
+                elif len(ways_to_go) == 2:
+                    way.append(ways_to_go[0])
+                    way.append(ways_to_go[1])
+
+            if len(way) == 2:
+                if way[0] == way[1]:
+                    way = [way[0]]
+
+            self.bf_path.append(way)
             last_cell = self.bf_path[len(self.bf_path)-1]
-            last_cell_dist = self.bellman_ford_distance[last_cell]
-            last_cell_neighs = self.find_neighbours_bf(last_cell,
-                                    ignore_cells_with_distance=False)
 
-            for neigh in last_cell_neighs:
-                if self.bellman_ford_distance[neigh] == last_cell_dist - 1:
-                    self.bf_path.append(neigh)
 
 
     def bf_read_whole_maze(self):
