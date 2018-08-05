@@ -43,6 +43,8 @@ class Micromouse:
         self.bf_path = []
         self.bf_path_one = []
         self.bf_path_two = []
+        self.bf_state_machine = []
+        self.bf_state_machine_index = 0
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -110,19 +112,61 @@ class Micromouse:
             self.bf_read_whole_maze()
 
         self.is_maze_filled()
-        if self.bf_maze_filled == True:
-            self.bf_find_path()
+        if self.bf_maze_filled == False:
+            self.bellman_ford_dist_counter += 1
 
-        self.bellman_ford_dist_counter += 1
+            new_bf_ends = []
+            for end in self.bf_ends:
+                neighbours = self.find_neighbours_bf(end)
+                for neigh in neighbours:
+                    self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+                    new_bf_ends.append(neigh)
 
-        new_bf_ends = []
-        for end in self.bf_ends:
-            neighbours = self.find_neighbours_bf(end)
-            for neigh in neighbours:
-                self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-                new_bf_ends.append(neigh)
+            self.bf_ends = new_bf_ends
+        elif self.bf_maze_filled == True:
+            if self.bf_path_one == []:
+                self.bf_find_path()
+                # temp:
+                self.path = self.bf_path_one[::-1]
+                print('self.bf_path_one = {}'.format(self.bf_path_one))
+                print('self.path = {}'.format(self.path))
 
-        self.bf_ends = new_bf_ends
+                curr_orient = self.current_orientation
+                current_pos = self.current_position
+
+                i = 1
+                while current_pos not in Micromouse.goal_cells_list:
+
+                    next_cell_dir = self.bf_get_direction(self.path[i], l_current_position=current_pos)
+                    if next_cell_dir == curr_orient:
+                        self.bf_state_machine.append(self.go_forward)
+                        current_pos = self.path[i]
+                        i = i + 1
+                    elif next_cell_dir != curr_orient:
+                        if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
+                            self.bf_state_machine.append(self.turn_right)
+                        elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
+                            self.bf_state_machine.append(self.turn_left)
+                        curr_orient = next_cell_dir
+            else:
+                self.is_goal_reached()
+                print('yolo')
+                self.bf_state_machine[self.bf_state_machine_index]()
+                self.bf_state_machine_index = self.bf_state_machine_index + 1
+
+
+    def bf_get_direction(self, cell, l_current_position=None):
+        if l_current_position == None:
+            l_current_position = self.current_position
+
+        if cell == l_current_position + Micromouse.distance_dict[N]:
+            return N
+        elif cell == l_current_position + Micromouse.distance_dict[S]:
+            return S
+        elif cell == l_current_position + Micromouse.distance_dict[W]:
+            return W
+        elif cell == l_current_position + Micromouse.distance_dict[E]:
+            return E
 
     def bf_find_path(self):
         goal_cell_nr = self.find_entrance_to_finish()

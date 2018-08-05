@@ -219,9 +219,13 @@ class Mazesolver_GUI:
                 if self.mm.bellman_ford_distance[i] != -1:
                     self.print_cell_number_bf(i)
         else:
-            self.draw_path(self.mm.bf_path_one)
-            if self.mm.bf_path_two != []:
-                self.draw_path(self.mm.bf_path_two, colour='magneta')
+            if self.path_lines == []:
+                self.draw_path(self.mm.bf_path_one)
+                if self.mm.bf_path_two != []:
+                    self.draw_path(self.mm.bf_path_two, colour='magenta')
+            else:
+                self.mm.step_bf()
+                self.print_mm()
 
     def mm_step(self):
         if self.mm.goal_reached == False:
