@@ -43,8 +43,8 @@ class Micromouse:
         self.bf_path = []
         self.bf_path_one = []
         self.bf_path_two = []
-        self.bf_state_machine = []
-        self.bf_state_machine_index = 0
+        self.bf_state_machine_path_one = []
+        self.bf_state_machine_path_one_index = 0
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -127,32 +127,11 @@ class Micromouse:
             if self.bf_path_one == []:
                 self.bf_find_path()
                 # temp:
-                self.path = self.bf_path_one[::-1]
-                print('self.bf_path_one = {}'.format(self.bf_path_one))
-                print('self.path = {}'.format(self.path))
-
-                curr_orient = self.current_orientation
-                current_pos = self.current_position
-
-                i = 1
-                while current_pos not in Micromouse.goal_cells_list:
-
-                    next_cell_dir = self.bf_get_direction(self.path[i], l_current_position=current_pos)
-                    if next_cell_dir == curr_orient:
-                        self.bf_state_machine.append(self.go_forward)
-                        current_pos = self.path[i]
-                        i = i + 1
-                    elif next_cell_dir != curr_orient:
-                        if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
-                            self.bf_state_machine.append(self.turn_right)
-                        elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
-                            self.bf_state_machine.append(self.turn_left)
-                        curr_orient = next_cell_dir
+                self.create_bf_state_machine()
             else:
                 self.is_goal_reached()
-                print('yolo')
-                self.bf_state_machine[self.bf_state_machine_index]()
-                self.bf_state_machine_index = self.bf_state_machine_index + 1
+                self.bf_state_machine_path_one[self.bf_state_machine_path_one_index]()
+                self.bf_state_machine_path_one_index = self.bf_state_machine_path_one_index + 1
 
 
     def bf_get_direction(self, cell, l_current_position=None):
@@ -204,6 +183,31 @@ class Micromouse:
         if self.are_there_two_paths() == True:
             self.bf_path_two = self.bf_get_second_path()
 
+    def create_bf_state_machine(self):
+        self.path = self.bf_path_one[::-1]
+
+        curr_orient = self.current_orientation
+        current_pos = self.current_position
+
+        i = 1
+        while current_pos not in Micromouse.goal_cells_list:
+
+            next_cell_dir = self.bf_get_direction(self.path[i], l_current_position=current_pos)
+            if next_cell_dir == curr_orient:
+                self.bf_state_machine_path_one.append(self.go_forward)
+                current_pos = self.path[i]
+                i = i + 1
+            elif next_cell_dir != curr_orient:
+                if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
+                    self.bf_state_machine_path_one.append(self.turn_right)
+                elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
+                    self.bf_state_machine_path_one.append(self.turn_left)
+                curr_orient = next_cell_dir
+
+    def choose_path(self):
+        pass
+
+
     def are_there_two_paths(self):
         for cell in self.bf_path:
             if len(cell) > 1:
@@ -250,7 +254,6 @@ class Micromouse:
     def is_maze_filled(self):
         if -1 not in self.bellman_ford_distance:
             self.bf_maze_filled = True #dla gui
-            print("Maze filled"),
 
     def find_neighbours_bf(self, cell, ignore_cells_with_distance=True):
         neighbours = []
