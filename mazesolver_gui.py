@@ -219,26 +219,9 @@ class Mazesolver_GUI:
                 if self.mm.bellman_ford_distance[i] != -1:
                     self.print_cell_number_bf(i)
         else:
-            pass
-            if self.are_there_two_paths() == True:
-                list_to_draw = [cell[0] for cell in self.mm.bf_path]
-                self.draw_path(list_to_draw)
-                list_to_draw = []
-                for cell in self.mm.bf_path:
-                    if len(cell) == 2:
-                        list_to_draw.append(cell[1])
-                    elif len(cell) == 1:
-                        list_to_draw.append(cell[0])
-                self.draw_path(list_to_draw, colour='magenta')
-            else:
-                list_to_draw = [cell[0] for cell in self.mm.bf_path]
-                self.draw_path(list_to_draw)
-
-    def are_there_two_paths(self):
-        for cell in self.mm.bf_path:
-            if len(cell) > 1:
-                return True
-        return False
+            self.draw_path(self.mm.bf_path_one)
+            if self.mm.bf_path_two != []:
+                self.draw_path(self.mm.bf_path_two, colour='magneta')
 
     def mm_step(self):
         if self.mm.goal_reached == False:

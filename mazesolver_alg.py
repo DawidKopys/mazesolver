@@ -41,6 +41,8 @@ class Micromouse:
         self.bf_ends = [0]
         self.bf_maze_filled = False
         self.bf_path = []
+        self.bf_path_one = []
+        self.bf_path_two = []
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -154,7 +156,24 @@ class Micromouse:
             self.bf_path.append(way)
             last_cell = self.bf_path[len(self.bf_path)-1]
 
+        self.bf_path_one = [cell[0] for cell in self.bf_path]
+        if self.are_there_two_paths() == True:
+            self.bf_path_two = self.bf_get_second_path()
 
+    def are_there_two_paths(self):
+        for cell in self.bf_path:
+            if len(cell) > 1:
+                return True
+        return False
+
+    def bf_get_second_path(self):
+        list_to_draw = []
+        for cell in self.bf_path:
+            if len(cell) == 2:
+                list_to_draw.append(cell[1])
+            elif len(cell) == 1:
+                list_to_draw.append(cell[0])
+        return list_to_draw
 
     def bf_read_whole_maze(self):
         for cell, cell2 in zip(self.mazelayout_mm, self.environment):
