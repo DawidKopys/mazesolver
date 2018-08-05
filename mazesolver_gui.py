@@ -220,9 +220,9 @@ class Mazesolver_GUI:
                     self.print_cell_number_bf(i)
         else:
             if self.path_lines == []:
-                self.draw_path(self.mm.bf_path_one)
-                if self.mm.bf_path_two != []:
-                    self.draw_path(self.mm.bf_path_two, colour='magenta')
+                self.draw_path(self.mm.bf_paths[0])
+                if self.mm.bf_paths[1] != 0:
+                    self.draw_path(self.mm.bf_paths[1], colour='magenta')
             else:
                 self.mm.step_bf()
                 self.print_mm()

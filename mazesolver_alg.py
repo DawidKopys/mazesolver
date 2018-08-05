@@ -41,8 +41,7 @@ class Micromouse:
         self.bf_ends = [0]
         self.bf_maze_filled = False
         self.bf_path = []
-        self.bf_path_one = []
-        self.bf_path_two = []
+        self.bf_paths = [0, 0]
         self.bf_state_machine_path_one = []
         self.bf_state_machine_path_one_index = 0
 
@@ -124,7 +123,7 @@ class Micromouse:
 
             self.bf_ends = new_bf_ends
         elif self.bf_maze_filled == True:
-            if self.bf_path_one == []:
+            if self.bf_paths[0] == 0:
                 self.bf_find_path()
                 # temp:
                 self.create_bf_state_machine()
@@ -179,12 +178,12 @@ class Micromouse:
             self.bf_path.append(way)
             last_cell = self.bf_path[len(self.bf_path)-1]
 
-        self.bf_path_one = [cell[0] for cell in self.bf_path]
+        self.bf_paths[0] = [cell[0] for cell in self.bf_path]
         if self.are_there_two_paths() == True:
-            self.bf_path_two = self.bf_get_second_path()
+            self.bf_paths[1] = self.bf_get_second_path()
 
     def create_bf_state_machine(self):
-        self.path = self.bf_path_one[::-1]
+        self.path = self.bf_paths[0][::-1]
 
         curr_orient = self.current_orientation
         current_pos = self.current_position
