@@ -42,8 +42,9 @@ class Micromouse:
         self.bf_maze_filled = False
         self.bf_path = []
         self.bf_paths = [0, 0]
-        self.bf_state_machine_path_one = []
-        self.bf_state_machine_path_one_index = 0
+        # self.bf_state_machine_path_one = []
+        self.bf_state_machines = [[], []]
+        self.bf_state_machine_index = 0
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -126,11 +127,14 @@ class Micromouse:
             if self.bf_paths[0] == 0:
                 self.bf_find_path()
                 # temp:
-                self.create_bf_state_machine()
+                self.create_bf_state_machines()
+                self.choose_path()
             else:
-                self.is_goal_reached()
-                self.bf_state_machine_path_one[self.bf_state_machine_path_one_index]()
-                self.bf_state_machine_path_one_index = self.bf_state_machine_path_one_index + 1
+                if self.is_goal_reached() == False:
+                    self.bf_state_machines[self.path_chosen][self.bf_state_machine_index]()
+                    self.bf_state_machine_index = self.bf_state_machine_index + 1
+                else:
+                    pass
 
 
     def bf_get_direction(self, cell, l_current_position=None):
@@ -182,29 +186,46 @@ class Micromouse:
         if self.are_there_two_paths() == True:
             self.bf_paths[1] = self.bf_get_second_path()
 
-    def create_bf_state_machine(self):
-        self.path = self.bf_paths[0][::-1]
+    def create_bf_state_machines(self):
 
-        curr_orient = self.current_orientation
-        current_pos = self.current_position
+        for path, state_machine in zip(self.bf_paths, self.bf_state_machines):
+            if path != 0:
+                local_path = path[::-1]
 
-        i = 1
-        while current_pos not in Micromouse.goal_cells_list:
+                curr_orient = self.current_orientation
+                current_pos = self.current_position
 
-            next_cell_dir = self.bf_get_direction(self.path[i], l_current_position=current_pos)
-            if next_cell_dir == curr_orient:
-                self.bf_state_machine_path_one.append(self.go_forward)
-                current_pos = self.path[i]
-                i = i + 1
-            elif next_cell_dir != curr_orient:
-                if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
-                    self.bf_state_machine_path_one.append(self.turn_right)
-                elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
-                    self.bf_state_machine_path_one.append(self.turn_left)
-                curr_orient = next_cell_dir
+                i = 1
+                while current_pos not in Micromouse.goal_cells_list:
+
+                    next_cell_dir = self.bf_get_direction(local_path[i], l_current_position=current_pos)
+                    if next_cell_dir == curr_orient:
+                        state_machine.append(self.go_forward)
+                        current_pos = local_path[i]
+                        i = i + 1
+                    elif next_cell_dir != curr_orient:
+                        if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
+                            state_machine.append(self.turn_right)
+                        elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
+                            state_machine.append(self.turn_left)
+                        curr_orient = next_cell_dir
 
     def choose_path(self):
-        pass
+        if self.are_there_two_paths == True:
+            path_one_turns, path_two_turns = 0, 0
+            for function in self.bf_state_machines[0]:
+                if function == self.turn_right or function == self.turn_left:
+                    path_one_turns = path_one_turns + 1
+            for function in self.bf_state_machines[1]:
+                if function == self.turn_right or function == self.turn_left:
+                    path_two_turns = path_two_turns + 1
+
+            if path_one_turns <= path_two_turns:
+                self.path_chosen = 0
+            else:
+                self.path_chosen = 1
+        else:
+            self.path_chosen = 0
 
 
     def are_there_two_paths(self):
@@ -333,6 +354,9 @@ class Micromouse:
             print('!!!YOU WON!!!')
             self.goal_reached = True
             self.run_in_progress = False
+            return True
+        else:
+            return False
 
     def turn_right(self):
         self.current_orientation = Micromouse.right_turn_dict[self.current_orientation]
@@ -356,6 +380,3 @@ class Micromouse:
         self.current_orientation = self.start_orientation
         self.visited_cells = []
         self.goal_reached = False
-
-        # for row_Micromouse, row_Mazesolver in zip(self.mazelayout_mm, mazelayout):
-        #     print(row_Micromouse, row_Mazesolver)
