@@ -99,6 +99,7 @@ class Mazesolver_GUI:
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
         self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf)
         self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
+        # self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.teach_environment)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -234,15 +235,22 @@ class Mazesolver_GUI:
             self.mm_step_timer.start()
             self.mm.step()
             self.print_mm()
-            for side in orientation_dict.values():
-                if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-                    self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
-                                    colour='red', w_width=self.walls_width/2))
+            self.mm_step_draw_known_walls()
+            # for side in orientation_dict.values():
+            #     if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
+            #         self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
+            #                         colour='red', w_width=self.walls_width/2))
         else:
             self.draw_path(self.mm.visited_cells)
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
             self.b_mm_solve_maze.state(['!disabled'])
             self.b_pauze_mm.state(['disabled'])
+
+    def mm_step_draw_known_walls(self):
+        for side in orientation_dict.values():
+            if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
+                self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
+                                colour='red', w_width=self.walls_width/2))
 
     def get_cell_coords(self, number):
         cell_x = self.cells_centres_flat[number][0]
