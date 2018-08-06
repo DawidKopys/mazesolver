@@ -97,7 +97,7 @@ class Mazesolver_GUI:
         self.b_mm_solve_maze  = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
-        self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf)
+        self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf_init)
         self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
         # self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.teach_environment)
 
@@ -211,10 +211,14 @@ class Mazesolver_GUI:
             self.mm.reset_bf()
             self.delete_path()
 
+    def mm_step_bf_init(self):
+        self.delete_cell_numbers()
+        self.mm.bf_read_whole_maze()
+        self.mm_step_draw_known_walls(ALL)
+        self.b_bf_step.configure(command=self.mm_step_bf)
+
 
     def mm_step_bf(self):
-        self.delete_cell_numbers()
-
         if self.mm.bf_maze_filled == False:
             self.mm.step_bf()
             for i in range(len(self.mm.bellman_ford_distance)):
@@ -236,21 +240,21 @@ class Mazesolver_GUI:
             self.mm.step()
             self.print_mm()
             self.mm_step_draw_known_walls()
-            # for side in orientation_dict.values():
-            #     if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-            #         self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
-            #                         colour='red', w_width=self.walls_width/2))
         else:
             self.draw_path(self.mm.visited_cells)
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
             self.b_mm_solve_maze.state(['!disabled'])
             self.b_pauze_mm.state(['disabled'])
 
-    def mm_step_draw_known_walls(self):
-        for side in orientation_dict.values():
-            if self.mm.mazelayout_mm[self.mm.current_position][side] == 1:
-                self.mm_env_walls.append(self.print_wall_NSEW[side](self.mm.current_position,
-                                colour='red', w_width=self.walls_width/2))
+    def mm_step_draw_known_walls(self, position=None):
+        if position == None:
+            position = [self.mm.current_position]
+        if position == ALL:
+            position = range(256)
+        for cell in position:
+            for side in orientation_dict.values():
+                if self.mm.mazelayout_mm[cell][side] == 1:
+                    self.mm_env_walls.append(self.print_wall_NSEW[side](cell, colour='red', w_width=self.walls_width/2))
 
     def get_cell_coords(self, number):
         cell_x = self.cells_centres_flat[number][0]

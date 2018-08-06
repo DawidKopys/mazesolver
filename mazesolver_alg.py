@@ -110,9 +110,7 @@ class Micromouse:
             self.bf_initialized = True
             self.bellman_ford_ends = [0]
             self.bellman_ford_distance[0] = 0
-            # temporary, pozniej dodamy przeszukiwanie, na razie znamy cały labirynt
-            self.bf_read_whole_maze()
-
+            
         self.is_maze_filled()
         if self.bf_maze_filled == False:
             self.bellman_ford_dist_counter += 1
