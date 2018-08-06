@@ -42,7 +42,6 @@ class Micromouse:
         self.bf_maze_filled = False
         self.bf_path = []
         self.bf_paths = [0, 0]
-        # self.bf_state_machine_path_one = []
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
 
@@ -94,12 +93,15 @@ class Micromouse:
                     self.turn_back()
 
     def reset_bf(self):
-        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
-        self.bf_ends = [0]
         self.bellman_ford_dist_counter = 0
+        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
         self.bf_initialized = False
+        self.bf_ends = [0]
         self.bf_maze_filled = False
         self.bf_path = []
+        self.bf_paths = [0, 0]
+        self.bf_state_machines = [[], []]
+        self.bf_state_machine_index = 0
 
 
     def step_bf(self):
@@ -380,3 +382,4 @@ class Micromouse:
         self.current_orientation = self.start_orientation
         self.visited_cells = []
         self.goal_reached = False
+        self.reset_bf()

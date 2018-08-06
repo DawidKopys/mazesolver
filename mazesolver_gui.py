@@ -19,7 +19,7 @@ def print_wall_decorate(func):
 
 
 class Mazesolver_GUI:
-    step_time = 0.05
+    step_time = 0.02
 
     def __init__(self, parent_root):
         self.parent_root = parent_root
@@ -181,6 +181,7 @@ class Mazesolver_GUI:
         self.b_mm_solve_maze.configure(text='Solve The Maze', command=self.solve_maze)
         self.enable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
         self.b_pauze_mm.state(['disabled'])
+        self.delete_path()
 
     def disable_w_except(self, parent, widget_exception=None):
         children = all_children(parent)
@@ -693,6 +694,7 @@ class Mazesolver_GUI:
         if self.path_lines != []:
             for line in self.path_lines:
                 self.canvas.delete(line)
+            self.path_lines = []
 
     def delete_mm_polygon(self):
         self.canvas.delete(self.mm_polygon)
