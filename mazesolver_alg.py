@@ -44,6 +44,8 @@ class Micromouse:
         self.bf_paths = [0, 0]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
+        self.bellman_ford_ends = [0]
+        self.bellman_ford_distance[0] = 0
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -102,15 +104,12 @@ class Micromouse:
         self.bf_paths = [0, 0]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
+        self.bellman_ford_ends = [0]
+        self.bellman_ford_distance[0] = 0
 
 
     def step_bf(self):
         # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
-        if self.bf_initialized == False:
-            self.bf_initialized = True
-            self.bellman_ford_ends = [0]
-            self.bellman_ford_distance[0] = 0
-            
         self.is_maze_filled()
         if self.bf_maze_filled == False:
             self.bellman_ford_dist_counter += 1
