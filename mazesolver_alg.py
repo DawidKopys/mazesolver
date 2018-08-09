@@ -38,14 +38,15 @@ class Micromouse:
         self.bellman_ford_dist_counter = 0
         self.bellman_ford_distance = [-1]*(nr_of_cells**2)
         self.bf_initialized = False
-        self.bf_ends = [0]
+        # self.bf_ends = [0]
+        self.bf_ends = Micromouse.goal_cells_list
         self.bf_maze_filled = False
         self.bf_path = []
         self.bf_paths = [0, 0]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
-        self.bellman_ford_ends = [0]
-        self.bellman_ford_distance[0] = 0
+        for destination_cell in Micromouse.goal_cells_list:
+            self.bellman_ford_distance[destination_cell] = 0
 
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
@@ -104,8 +105,7 @@ class Micromouse:
         self.bf_paths = [0, 0]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
-        self.bellman_ford_ends = [0]
-        self.bellman_ford_distance[0] = 0
+        # self.bellman_ford_distance[0] = 0
 
 
     def step_bf(self):
@@ -113,7 +113,6 @@ class Micromouse:
         self.is_maze_filled()
         if self.bf_maze_filled == False:
             self.bellman_ford_dist_counter += 1
-
             new_bf_ends = []
             for end in self.bf_ends:
                 neighbours = self.find_neighbours_bf(end)
