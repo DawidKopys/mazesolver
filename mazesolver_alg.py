@@ -41,7 +41,7 @@ class Micromouse:
         self.bf_ends = Micromouse.goal_cells_list
         self.bf_maze_filled = False
         self.bf_path = []
-        self.bf_paths = [0, 0]
+        self.bf_paths = [[]]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
         for destination_cell in Micromouse.goal_cells_list:
@@ -104,30 +104,52 @@ class Micromouse:
         self.bf_state_machine_index = 0
 
     def step_bf(self):
-        # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
-        self.is_maze_filled()
-        if self.bf_maze_filled == False:
-            self.bellman_ford_dist_counter += 1
-            new_bf_ends = []
-            for end in self.bf_ends:
-                neighbours = self.find_neighbours_bf(end)
-                for neigh in neighbours:
-                    self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-                    new_bf_ends.append(neigh)
+        self.flood_fill()
 
-            self.bf_ends = new_bf_ends
-        elif self.bf_maze_filled == True:
-            if self.bf_paths[0] == 0:
-                self.bf_find_path()
-                # temp:
-                self.create_bf_state_machines()
-                self.choose_path()
+        # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
+        # self.is_maze_filled()
+        # if self.bf_maze_filled == False:
+        #     self.bellman_ford_dist_counter += 1
+        #     new_bf_ends = []
+        #     for end in self.bf_ends:
+        #         neighbours = self.find_neighbours_bf(end)
+        #         for neigh in neighbours:
+        #             self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+        #             new_bf_ends.append(neigh)
+        #
+        #     self.bf_ends = new_bf_ends
+
+        if self.bf_paths[0] == 0:
+            self.bf_find_path()
+            # temp:
+            self.create_bf_state_machines()
+            self.choose_path()
+        else:
+            if self.is_goal_reached() == False:
+                self.bf_state_machines[self.path_chosen][self.bf_state_machine_index]()
+                self.bf_state_machine_index = self.bf_state_machine_index + 1
             else:
-                if self.is_goal_reached() == False:
-                    self.bf_state_machines[self.path_chosen][self.bf_state_machine_index]()
-                    self.bf_state_machine_index = self.bf_state_machine_index + 1
-                else:
-                    pass
+                pass
+
+    def flood_fill(self):
+        if self.is_maze_filled() == False:
+            self.bellman_ford_distance = [-1]*(nr_of_cells**2)
+            self.bellman_ford_dist_counter = 0
+            self.bf_ends = Micromouse.goal_cells_list
+            for destination_cell in Micromouse.goal_cells_list:
+                self.bellman_ford_distance[destination_cell] = 0
+
+            while self.is_maze_filled() == False:
+                self.bellman_ford_dist_counter += 1
+
+                new_bf_ends = []
+                for end in self.bf_ends:
+                    neighbours = self.find_neighbours_bf(end)
+                    for neigh in neighbours:
+                        self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+                        new_bf_ends.append(neigh)
+
+                self.bf_ends = new_bf_ends
 
 
     def bf_get_direction(self, cell, l_current_position=None):
@@ -183,20 +205,27 @@ class Micromouse:
         goal_cell_nr = self.find_entrance_to_finish()
         print('goal_cell_nr =', goal_cell_nr)
 
-        self.bf_path.append(self.current_position)
+        self.bf_paths[0].append(self.current_position)
 
-        while goal_cell_nr not in self.bf_path:
-            cell = self.bf_path[len(self.bf_path)-1]
-            cell_dist = self.bellman_ford_distance[cell]
-            cell_neighs = self.find_neighbours_bf(cell, ignore_cells_with_distance=False)
+        while goal_cell_nr not in self.bf_paths[0]:
+            for path in self.bf_paths:
+                cell = path[len(self.bf_path)-1]
+                cell_dist = self.bellman_ford_distance[cell]
+                cell_neighs = self.find_neighbours_bf(cell, ignore_cells_with_distance=False)
 
-            for neigh in cell_neighs:
-                neigh_dist = self.bellman_ford_distance[neigh]
-                if  neigh_dist == cell_dist - 1:
-                    self.bf_path.append(neigh)
+                ways_to_go = []
+                for neigh in cell_neighs:
+                    neigh_dist = self.bellman_ford_distance[neigh]
+                    if  neigh_dist == cell_dist - 1:
+                        ways_to_go.append(neigh)
 
-        print('self.bf_path = {}'.format(self.bf_path))
-        self.bf_paths[0] = self.bf_path
+                if len(ways_to_go) > 1:
+                    self.bf_paths.append()
+
+                self.bf_path.append(neigh)
+
+            print('self.bf_path = {}'.format(self.bf_path))
+            self.bf_paths[0] = self.bf_path
 
 
     def create_bf_state_machines(self):
@@ -285,6 +314,10 @@ class Micromouse:
     def is_maze_filled(self):
         if -1 not in self.bellman_ford_distance:
             self.bf_maze_filled = True #dla gui
+            return True
+        else:
+            self.bf_maze_filled = False
+            return False
 
     def find_neighbours_bf(self, cell, ignore_cells_with_distance=True):
         neighbours = []
