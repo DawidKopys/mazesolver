@@ -25,7 +25,6 @@ class Mazesolver_GUI:
         self.parent_root = parent_root
 
         self.size        = 800
-        # nr_of_cells = nr_of_cells
         self.edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
         self.edge_list_N = [i-(nr_of_cells-1) for i in self.edge_list_S]
         self.edge_list_W = list(range(1,nr_of_cells+1))
