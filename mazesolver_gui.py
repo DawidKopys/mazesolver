@@ -40,8 +40,11 @@ class Mazesolver_GUI:
         self.step = self.size / nr_of_cells
         self.dist_centre_to_wall = (self.size / nr_of_cells) / 2
 
+        self.line_colours = ['black', 'green', 'magenta', 'cyan', 'red', 'yellow', 'blue']
+
         self.up    = self.offset
         self.left  = self.offset
+
         self.down  = self.size + self.offset
         self.right = self.size + self.offset
 
@@ -225,9 +228,12 @@ class Mazesolver_GUI:
                     self.print_cell_number_bf(i)
         else:
             if self.path_lines == []:
-                self.draw_path(self.mm.bf_paths[0])
-                if len(self.mm.bf_paths) > 1:
-                    self.draw_path(self.mm.bf_paths[1], colour='magenta')
+                nr_of_paths = len(self.mm.bf_paths)
+                if  nr_of_paths > 1:
+                    for path, line_colour in zip(self.mm.bf_paths, self.line_colours):
+                        self.draw_path(path, colour=line_colour)
+                else:
+                    self.draw_path(self.mm.bf_paths[0])
             else:
                 self.mm.step_bf()
                 self.print_mm()

@@ -42,7 +42,8 @@ class Micromouse:
         self.bf_maze_filled = False
         self.bf_path = []
         self.bf_paths = [[]]
-        self.bf_state_machines = [[], []]
+        # self.bf_state_machines = [[], []]
+        self.bf_state_machines = [[]]
         self.bf_state_machine_index = 0
         for destination_cell in Micromouse.goal_cells_list:
             self.bellman_ford_distance[destination_cell] = 0
@@ -206,7 +207,8 @@ class Micromouse:
 
         self.bf_paths[0].append(self.current_position)
 
-        while goal_cell_nr not in self.bf_paths[0]:
+        while goal_cell_nr not in self.bf_paths[len(self.bf_paths)-1] or goal_cell_nr not in self.bf_paths[0]:
+            # print('\ngoal_cell_nr ({}) not in {} or {}'.format(goal_cell_nr, self.bf_paths[len(self.bf_paths)-1], self.bf_paths[0]))
             for path in self.bf_paths:
                 cell = path[len(path)-1]
                 cell_dist = self.bellman_ford_distance[cell]
@@ -225,9 +227,8 @@ class Micromouse:
                         new_path.append(ways_to_go[i])
                         self.bf_paths.append(new_path)
 
-                if len(ways_to_go) == 0:
-                    break
-                path.append(ways_to_go[0])
+                if nr_of_paths != 0:
+                    path.append(ways_to_go[0])
 
         for i in range(0, len(self.bf_paths)):
             print('self.bf_paths[{}] = {}'.format(i, self.bf_paths[i]))
@@ -235,25 +236,28 @@ class Micromouse:
 
     def create_bf_state_machines(self):
 
+        nr_of_paths = len(self.bf_paths)
+        # utworz listę maszyn stanow - tyle pustych list ile sciezek
+        self.bf_state_machines = [[] for _ in range(nr_of_paths)]
+
         for path, state_machine in zip(self.bf_paths, self.bf_state_machines):
-            if path != 0:
-                curr_orient = self.current_orientation
-                current_pos = self.current_position
+            curr_orient = self.current_orientation
+            current_pos = self.current_position
 
-                i = 1
-                while current_pos not in Micromouse.goal_cells_list:
+            i = 1
+            while current_pos not in Micromouse.goal_cells_list:
 
-                    next_cell_dir = self.bf_get_direction(path[i], l_current_position=current_pos)
-                    if next_cell_dir == curr_orient:
-                        state_machine.append(self.go_forward)
-                        current_pos = path[i]
-                        i = i + 1
-                    elif next_cell_dir != curr_orient:
-                        if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
-                            state_machine.append(self.turn_right)
-                        elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
-                            state_machine.append(self.turn_left)
-                        curr_orient = next_cell_dir
+                next_cell_dir = self.bf_get_direction(path[i], l_current_position=current_pos)
+                if next_cell_dir == curr_orient:
+                    state_machine.append(self.go_forward)
+                    current_pos = path[i]
+                    i = i + 1
+                elif next_cell_dir != curr_orient:
+                    if Micromouse.right_turn_dict[curr_orient] == next_cell_dir:
+                        state_machine.append(self.turn_right)
+                    elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
+                        state_machine.append(self.turn_left)
+                    curr_orient = next_cell_dir
 
     def choose_path(self):
         self.path_chosen = 0
