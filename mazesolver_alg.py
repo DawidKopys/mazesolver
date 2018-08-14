@@ -119,7 +119,7 @@ class Micromouse:
         #
         #     self.bf_ends = new_bf_ends
 
-        if self.bf_paths[0] == 0:
+        if self.bf_paths[0] == []:
             self.bf_find_path()
             # temp:
             self.create_bf_state_machines()
@@ -165,51 +165,50 @@ class Micromouse:
         elif cell == l_current_position + Micromouse.distance_dict[E]:
             return E
 
+    # def bf_find_path(self):
+    #     goal_cell_nr = self.find_entrance_to_finish()
+    #     self.bf_path.append([goal_cell_nr])
+    #
+    #     last_cell = self.bf_path[len(self.bf_path)-1]
+    #
+    #     while [0] not in self.bf_path:
+    #         way = []
+    #         for cell, i in zip(last_cell, range(len(last_cell))):
+    #             cell = self.bf_path[len(self.bf_path)-1][i]
+    #             cell_dist = self.bellman_ford_distance[cell]
+    #             cell_neighs = self.find_neighbours_bf(cell,
+    #                                     ignore_cells_with_distance=False)
+    #
+    #             ways_to_go = []
+    #             for neigh in cell_neighs:
+    #                 if self.bellman_ford_distance[neigh] == cell_dist - 1:
+    #                     ways_to_go.append(neigh)
+    #
+    #             if len(ways_to_go) == 1:
+    #                 way.append(ways_to_go[0])
+    #             elif len(ways_to_go) == 2:
+    #                 way.append(ways_to_go[0])
+    #                 way.append(ways_to_go[1])
+    #
+    #         if len(way) == 2:
+    #             if way[0] == way[1]:
+    #                 way = [way[0]]
+    #
+    #         self.bf_path.append(way)
+    #         last_cell = self.bf_path[len(self.bf_path)-1]
+    #
+    #     self.bf_paths[0] = [cell[0] for cell in self.bf_path]
+    #     if self.are_there_two_paths() == True:
+    #         self.bf_paths[1] = self.bf_get_second_path()
+
     def bf_find_path(self):
         goal_cell_nr = self.find_entrance_to_finish()
-        self.bf_path.append([goal_cell_nr])
-
-        last_cell = self.bf_path[len(self.bf_path)-1]
-
-        while [0] not in self.bf_path:
-            way = []
-            for cell, i in zip(last_cell, range(len(last_cell))):
-                cell = self.bf_path[len(self.bf_path)-1][i]
-                cell_dist = self.bellman_ford_distance[cell]
-                cell_neighs = self.find_neighbours_bf(cell,
-                                        ignore_cells_with_distance=False)
-
-                ways_to_go = []
-                for neigh in cell_neighs:
-                    if self.bellman_ford_distance[neigh] == cell_dist - 1:
-                        ways_to_go.append(neigh)
-
-                if len(ways_to_go) == 1:
-                    way.append(ways_to_go[0])
-                elif len(ways_to_go) == 2:
-                    way.append(ways_to_go[0])
-                    way.append(ways_to_go[1])
-
-            if len(way) == 2:
-                if way[0] == way[1]:
-                    way = [way[0]]
-
-            self.bf_path.append(way)
-            last_cell = self.bf_path[len(self.bf_path)-1]
-
-        self.bf_paths[0] = [cell[0] for cell in self.bf_path]
-        if self.are_there_two_paths() == True:
-            self.bf_paths[1] = self.bf_get_second_path()
-
-    def bf_find_path(self):
-        goal_cell_nr = self.find_entrance_to_finish()
-        print('goal_cell_nr =', goal_cell_nr)
 
         self.bf_paths[0].append(self.current_position)
 
         while goal_cell_nr not in self.bf_paths[0]:
             for path in self.bf_paths:
-                cell = path[len(self.bf_path)-1]
+                cell = path[len(path)-1]
                 cell_dist = self.bellman_ford_distance[cell]
                 cell_neighs = self.find_neighbours_bf(cell, ignore_cells_with_distance=False)
 
@@ -219,13 +218,19 @@ class Micromouse:
                     if  neigh_dist == cell_dist - 1:
                         ways_to_go.append(neigh)
 
-                if len(ways_to_go) > 1:
-                    self.bf_paths.append()
+                nr_of_paths = len(ways_to_go)
+                if nr_of_paths > 1:
+                    for i in range(1, nr_of_paths): #dla kazdej sciezki tworzymy nowa liste
+                        new_path = path[:]
+                        new_path.append(ways_to_go[i])
+                        self.bf_paths.append(new_path)
 
-                self.bf_path.append(neigh)
+                if len(ways_to_go) == 0:
+                    break
+                path.append(ways_to_go[0])
 
-            print('self.bf_path = {}'.format(self.bf_path))
-            self.bf_paths[0] = self.bf_path
+        for i in range(0, len(self.bf_paths)):
+            print('self.bf_paths[{}] = {}'.format(i, self.bf_paths[i]))
 
 
     def create_bf_state_machines(self):
@@ -251,21 +256,22 @@ class Micromouse:
                         curr_orient = next_cell_dir
 
     def choose_path(self):
-        if self.are_there_two_paths == True:
-            path_one_turns, path_two_turns = 0, 0
-            for function in self.bf_state_machines[0]:
-                if function == self.turn_right or function == self.turn_left:
-                    path_one_turns = path_one_turns + 1
-            for function in self.bf_state_machines[1]:
-                if function == self.turn_right or function == self.turn_left:
-                    path_two_turns = path_two_turns + 1
-
-            if path_one_turns <= path_two_turns:
-                self.path_chosen = 0
-            else:
-                self.path_chosen = 1
-        else:
-            self.path_chosen = 0
+        self.path_chosen = 0
+        # if self.are_there_two_paths == True:
+        #     path_one_turns, path_two_turns = 0, 0
+        #     for function in self.bf_state_machines[0]:
+        #         if function == self.turn_right or function == self.turn_left:
+        #             path_one_turns = path_one_turns + 1
+        #     for function in self.bf_state_machines[1]:
+        #         if function == self.turn_right or function == self.turn_left:
+        #             path_two_turns = path_two_turns + 1
+        #
+        #     if path_one_turns <= path_two_turns:
+        #         self.path_chosen = 0
+        #     else:
+        #         self.path_chosen = 1
+        # else:
+        #     self.path_chosen = 0
 
 
     def are_there_two_paths(self):

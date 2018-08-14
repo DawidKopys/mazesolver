@@ -226,7 +226,7 @@ class Mazesolver_GUI:
         else:
             if self.path_lines == []:
                 self.draw_path(self.mm.bf_paths[0])
-                if self.mm.bf_paths[1] != 0:
+                if len(self.mm.bf_paths) > 1:
                     self.draw_path(self.mm.bf_paths[1], colour='magenta')
             else:
                 self.mm.step_bf()
