@@ -208,8 +208,6 @@ class Mazesolver_GUI:
                 if number != 0:
                     self.canvas.delete(number)
             self.cell_numbers_bf = [0]*(nr_of_cells**2)
-            # self.mm.reset_bf()
-            # self.delete_path()
 
     def mm_step_bf_init(self):
         self.delete_cell_numbers()
@@ -224,23 +222,6 @@ class Mazesolver_GUI:
         self.mm.bf_read_edges()
         self.mm_step_draw_known_walls(ALL)
 
-    # def mm_step_bf(self):
-    #     if self.mm.bf_maze_filled == False:
-    #         self.mm.step_bf()
-    #         for i in range(len(self.mm.bellman_ford_distance)):
-    #             if self.mm.bellman_ford_distance[i] != -1:
-    #                 self.print_cell_number_bf(i)
-    #     else:
-    #         if self.path_lines == []:
-    #             nr_of_paths = len(self.mm.bf_paths)
-    #             if  nr_of_paths > 1:
-    #                 for path, line_colour in zip(self.mm.bf_paths, self.line_colours):
-    #                     self.draw_path(path, colour=line_colour)
-    #             else:
-    #                 self.draw_path(self.mm.bf_paths[0])
-    #         else:
-    #             self.mm.step_bf()
-    #             self.print_mm()
 
     def mm_step_draw_path(self):
         nr_of_paths = len(self.mm.bf_paths)
@@ -258,6 +239,9 @@ class Mazesolver_GUI:
         else:
             self.draw_path(self.mm.bf_paths[0])
 
+        # draw chosen path (red)
+        self.draw_path(self.mm.bf_paths[self.mm.path_chosen], colour='red')
+
     def mm_step_bf(self):
         if self.mm.state == INSPECTION:
             self.mm.step_bf()
@@ -266,7 +250,7 @@ class Mazesolver_GUI:
             self.print_cell_numbers_bf()
 
             self.print_mm()
-            self.mm_step_draw_known_walls()
+            self.mm_step_draw_known_walls(ALL)
 
             self.delete_path()
             self.mm_step_draw_path()
@@ -415,6 +399,8 @@ class Mazesolver_GUI:
 
     # print micromouse and create self.mm object
     def print_mm(self):
+        print('MM on cell: {}'.format(self.mm.current_position))
+
         if self.mm_polygon != None:
             self.canvas.delete(self.mm_polygon)
         # cell_coords = self.cel    ls_centres[0][0]

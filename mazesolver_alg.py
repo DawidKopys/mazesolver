@@ -34,9 +34,7 @@ class Micromouse:
         self.bf_initialized = False
         self.bf_ends = Micromouse.goal_cells_list
         self.bf_maze_filled = False
-        self.bf_path = []
         self.bf_paths = [[]]
-        # self.bf_state_machines = [[], []]
         self.bf_state_machines = [[]]
         self.bf_state_machine_index = 0
         for destination_cell in Micromouse.goal_cells_list:
@@ -52,6 +50,7 @@ class Micromouse:
                 self.mazelayout_mm[self.current_position][side] = 1
 
         self.mazelayout_mm[self.current_position][4] = 'visited'
+        print('update_cell(): self.mazelayout_mm[self.current_position] = self.mazelayout_mm[{}] = {}'.format(self.current_position, self.mazelayout_mm[self.current_position]))
 
     def step(self):
         try:
@@ -93,7 +92,6 @@ class Micromouse:
         self.bellman_ford_distance = [-1]*(nr_of_cells**2)
         self.bf_initialized = False
         self.bf_maze_filled = False
-        self.bf_path = []
         self.bf_paths = [0, 0]
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
@@ -107,7 +105,15 @@ class Micromouse:
 
         # wybor drogi
         self.bf_find_path()
+        self.create_bf_state_machines()
         self.choose_path()
+
+        # ruch
+        self.bf_move()
+
+    def bf_move(self):
+        print('move - {}'.format(self.bf_state_machines[self.path_chosen][0]))
+        self.bf_state_machines[self.path_chosen][0]()
 
 
     # def step_bf(self):
@@ -139,6 +145,9 @@ class Micromouse:
     #             pass
 
     def flood_fill(self):
+        old = self.bellman_ford_distance[:]
+        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
+
         if self.is_maze_filled() == False:
             self.bellman_ford_distance = [-1]*(nr_of_cells**2)
             self.bellman_ford_dist_counter = 0
@@ -157,6 +166,11 @@ class Micromouse:
                         new_bf_ends.append(neigh)
 
                 self.bf_ends = new_bf_ends
+
+        if old != self.bellman_ford_distance:
+            print('flood_fill(): old != curr')
+        else:
+            print('flood_fill(): old == curr')
 
     def fill_edges(self):
         for cell in edge_list_E:
@@ -182,6 +196,9 @@ class Micromouse:
             return E
 
     def bf_find_path(self):
+        old = self.bf_paths[:]
+        self.bf_paths = [[]]
+
         goal_cell_nr = self.find_entrance_to_finish()
 
         self.bf_paths[0].append(self.current_position)
@@ -208,11 +225,17 @@ class Micromouse:
                 if nr_of_paths != 0:
                     path.append(ways_to_go[0])
 
-        for i in range(0, len(self.bf_paths)):
-            print('self.bf_paths[{}] = {}'.format(i, self.bf_paths[i]))
+        if old != self.bf_paths:
+            print('bf_find_path(): old != curr')
+        else:
+            print('bf_find_path(): old == curr')
+
+        # for i in range(0, len(self.bf_paths)):
+        #     print('self.bf_paths[{}] = {}'.format(i, self.bf_paths[i]))
 
 
     def create_bf_state_machines(self):
+        self.bf_state_machines = [[]]
 
         nr_of_paths = len(self.bf_paths)
         # utworz listę maszyn stanow - tyle pustych list ile sciezek
@@ -249,20 +272,7 @@ class Micromouse:
             if turns_counts[i] < turns_counts[self.path_chosen]:
                 self.path_chosen = i
 
-    def are_there_two_paths(self):
-        for cell in self.bf_path:
-            if len(cell) > 1:
-                return True
-        return False
-
-    def bf_get_second_path(self):
-        list_to_draw = []
-        for cell in self.bf_path:
-            if len(cell) == 2:
-                list_to_draw.append(cell[1])
-            elif len(cell) == 1:
-                list_to_draw.append(cell[0])
-        return list_to_draw
+        print('Chosen path: {}'.format(self.path_chosen))
 
     def bf_read_whole_maze(self):
         for cell, cell2 in zip(self.mazelayout_mm, self.environment):
