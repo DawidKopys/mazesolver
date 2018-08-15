@@ -249,8 +249,10 @@ class Mazesolver_GUI:
             self.delete_cell_numbers_bf()
             self.print_cell_numbers_bf()
 
-            # self.print_mm()
-            # self.mm_step_draw_known_walls()
+            self.print_mm()
+            self.mm_step_draw_known_walls()
+
+            # self.mm_step_draw_path()
 
         if self.mm.state == RACE:
             print('c')

@@ -1,11 +1,5 @@
 from mazesolver_files import *
 
-
-INSPECTION = 'INSPECTION'
-inspection = 'INSPECTION'
-RACE = 'RACE'
-race = 'RACE'
-
 class Micromouse:
     right_turn_dict  = {N:E, E:S, S:W, W:N}
     left_turn_dict   = {N:W, E:N, S:E, W:S}
@@ -105,32 +99,42 @@ class Micromouse:
         self.bf_state_machine_index = 0
 
     def step_bf(self):
+        # wykryj ściany
+        self.update_cell()
+
+        # zalanie wodą
         self.flood_fill()
 
-        # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
-        # self.is_maze_filled()
-        # if self.bf_maze_filled == False:
-        #     self.bellman_ford_dist_counter += 1
-        #     new_bf_ends = []
-        #     for end in self.bf_ends:
-        #         neighbours = self.find_neighbours_bf(end)
-        #         for neigh in neighbours:
-        #             self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-        #             new_bf_ends.append(neigh)
-        #
-        #     self.bf_ends = new_bf_ends
+        # wybor drogi
+        self.bf_find_path()
 
-        if self.bf_paths[0] == []:
-            self.bf_find_path()
-            # temp:
-            self.create_bf_state_machines()
-            self.choose_path()
-        else:
-            if self.is_goal_reached() == False:
-                self.bf_state_machines[self.path_chosen][self.bf_state_machine_index]()
-                self.bf_state_machine_index = self.bf_state_machine_index + 1
-            else:
-                pass
+    # def step_bf(self):
+    #     self.flood_fill()
+    #
+    #     # self.bellman_ford_distance - lista 256-u elementow, kazda z nich to pojedyncza cela, zapisujemy w niej "odl do srodka"
+    #     # self.is_maze_filled()
+    #     # if self.bf_maze_filled == False:
+    #     #     self.bellman_ford_dist_counter += 1
+    #     #     new_bf_ends = []
+    #     #     for end in self.bf_ends:
+    #     #         neighbours = self.find_neighbours_bf(end)
+    #     #         for neigh in neighbours:
+    #     #             self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+    #     #             new_bf_ends.append(neigh)
+    #     #
+    #     #     self.bf_ends = new_bf_ends
+    #
+    #     if self.bf_paths[0] == []:
+    #         self.bf_find_path()
+    #         # temp:
+    #         self.create_bf_state_machines()
+    #         self.choose_path()
+    #     else:
+    #         if self.is_goal_reached() == False:
+    #             self.bf_state_machines[self.path_chosen][self.bf_state_machine_index]()
+    #             self.bf_state_machine_index = self.bf_state_machine_index + 1
+    #         else:
+    #             pass
 
     def flood_fill(self):
         if self.is_maze_filled() == False:

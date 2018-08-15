@@ -7,6 +7,11 @@ edge_list_N = [i-(nr_of_cells-1) for i in edge_list_S]
 edge_list_W = list(range(1,nr_of_cells+1))
 edge_list_E = list(range(nr_of_cells**2+1-nr_of_cells ,nr_of_cells**2+1))
 
+INSPECTION = 'INSPECTION'
+inspection = 'INSPECTION'
+RACE = 'RACE'
+race = 'RACE'
+
 # function reading maze layout to file, save the information in Mazesolver.mazelayout
 def read_maze_layout(filename):
     try:
