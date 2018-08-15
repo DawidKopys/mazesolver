@@ -25,10 +25,7 @@ class Mazesolver_GUI:
         self.parent_root = parent_root
 
         self.size        = 800
-        self.edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
-        self.edge_list_N = [i-(nr_of_cells-1) for i in self.edge_list_S]
-        self.edge_list_W = list(range(1,nr_of_cells+1))
-        self.edge_list_E = list(range(nr_of_cells**2+1-nr_of_cells ,nr_of_cells**2+1))
+
         self.offset      = 20
         self.grid_width  = 1
         self.walls_width = 9
@@ -101,7 +98,7 @@ class Mazesolver_GUI:
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
         self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf_init)
         self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
-        # self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.teach_environment)
+        self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.bf_teach_environment)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -113,6 +110,7 @@ class Mazesolver_GUI:
         self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
         self.b_bf_step.grid(column=0, row=12, sticky=E+W, pady=2)
         self.b_bf_delete_nrs.grid(column=0, row=13, sticky=E+W, pady=2)
+        self.b_teach_env.grid(column=0, row=14, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -210,33 +208,54 @@ class Mazesolver_GUI:
                 if number != 0:
                     self.canvas.delete(number)
             self.cell_numbers_bf = [0]*(nr_of_cells**2)
-            self.mm.reset_bf()
-            self.delete_path()
+            # self.mm.reset_bf()
+            # self.delete_path()
 
     def mm_step_bf_init(self):
         self.delete_cell_numbers()
-        self.mm.bf_read_whole_maze()
-        self.mm_step_draw_known_walls(ALL)
+        self.mm.fill_edges()
         self.b_bf_step.configure(command=self.mm_step_bf)
 
+    def bf_teach_environment(self):
+        self.mm.bf_read_whole_maze()
+        self.mm_step_draw_known_walls(ALL)
+
+    def bf_teach_edge_walls(self):
+        self.mm.bf_read_edges()
+        self.mm_step_draw_known_walls(ALL)
+
+    # def mm_step_bf(self):
+    #     if self.mm.bf_maze_filled == False:
+    #         self.mm.step_bf()
+    #         for i in range(len(self.mm.bellman_ford_distance)):
+    #             if self.mm.bellman_ford_distance[i] != -1:
+    #                 self.print_cell_number_bf(i)
+    #     else:
+    #         if self.path_lines == []:
+    #             nr_of_paths = len(self.mm.bf_paths)
+    #             if  nr_of_paths > 1:
+    #                 for path, line_colour in zip(self.mm.bf_paths, self.line_colours):
+    #                     self.draw_path(path, colour=line_colour)
+    #             else:
+    #                 self.draw_path(self.mm.bf_paths[0])
+    #         else:
+    #             self.mm.step_bf()
+    #             self.print_mm()
 
     def mm_step_bf(self):
-        if self.mm.bf_maze_filled == False:
+        if self.mm.state == INSPECTION:
             self.mm.step_bf()
-            for i in range(len(self.mm.bellman_ford_distance)):
-                if self.mm.bellman_ford_distance[i] != -1:
-                    self.print_cell_number_bf(i)
-        else:
-            if self.path_lines == []:
-                nr_of_paths = len(self.mm.bf_paths)
-                if  nr_of_paths > 1:
-                    for path, line_colour in zip(self.mm.bf_paths, self.line_colours):
-                        self.draw_path(path, colour=line_colour)
-                else:
-                    self.draw_path(self.mm.bf_paths[0])
-            else:
-                self.mm.step_bf()
-                self.print_mm()
+
+            self.delete_cell_numbers_bf()
+            self.print_cell_numbers_bf()
+
+            # self.print_mm()
+            # self.mm_step_draw_known_walls()
+
+        if self.mm.state == RACE:
+            print('c')
+            self.draw_path(self.mm.bf_paths[0])
+            # to be continued...
 
     def mm_step(self):
         if self.mm.goal_reached == False:
@@ -442,6 +461,12 @@ class Mazesolver_GUI:
             id = self.canvas.create_text(self.cells_centres_flat[number-1][0], self.cells_centres_flat[number-1][1], text=str(number))
             self.cell_numbers.append(id)
 
+    def print_cell_numbers_bf(self):
+        for i in range(len(self.mm.bellman_ford_distance)):
+            if self.mm.bellman_ford_distance[i] != -1:
+                self.print_cell_number_bf(i)
+
+
     def print_cell_number_bf(self, number):
         if self.cell_numbers_bf[number] == 0:
             cell_text = self.mm.bellman_ford_distance[number]
@@ -644,26 +669,26 @@ class Mazesolver_GUI:
             return True
 
     def is_on_edge(self, number, side):
-        if number in self.edge_list_N:
+        if number in edge_list_N:
             if N == side:
                 return True
             else:
                 #edge cells that are both in N and E or W list
-                if number not in self.edge_list_E and number not in self.edge_list_W:
+                if number not in edge_list_E and number not in edge_list_W:
                     return False
-        if number in self.edge_list_S:
+        if number in edge_list_S:
             if S == side:
                 return True
             else:
                 #edge cells that are both in S and E or W list
-                if number not in self.edge_list_E and number not in self.edge_list_W:
+                if number not in edge_list_E and number not in edge_list_W:
                     return False
-        if number in self.edge_list_E:
+        if number in edge_list_E:
             if E == side:
                 return True
             else:
                 return False
-        if number in self.edge_list_W:
+        if number in edge_list_W:
             if W == side:
                 return True
             else:

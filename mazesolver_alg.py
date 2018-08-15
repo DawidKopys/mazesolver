@@ -152,6 +152,15 @@ class Micromouse:
 
                 self.bf_ends = new_bf_ends
 
+    def fill_edges(self):
+        for cell in edge_list_E:
+            self.mazelayout_mm[cell-1][orientation_dict[E]] = 1
+        for cell in edge_list_W:
+            self.mazelayout_mm[cell-1][orientation_dict[W]] = 1
+        for cell in edge_list_S:
+            self.mazelayout_mm[cell-1][orientation_dict[S]] = 1
+        for cell in edge_list_N:
+            self.mazelayout_mm[cell-1][orientation_dict[N]] = 1
 
     def bf_get_direction(self, cell, l_current_position=None):
         if l_current_position == None:

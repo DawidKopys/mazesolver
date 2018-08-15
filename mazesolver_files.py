@@ -2,6 +2,10 @@ from tkinter import *
 
 orientation_dict = {N:0, E:1, S:2, W:3}
 nr_of_cells = 16
+edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
+edge_list_N = [i-(nr_of_cells-1) for i in edge_list_S]
+edge_list_W = list(range(1,nr_of_cells+1))
+edge_list_E = list(range(nr_of_cells**2+1-nr_of_cells ,nr_of_cells**2+1))
 
 # function reading maze layout to file, save the information in Mazesolver.mazelayout
 def read_maze_layout(filename):
