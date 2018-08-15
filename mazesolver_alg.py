@@ -107,6 +107,8 @@ class Micromouse:
 
         # wybor drogi
         self.bf_find_path()
+        self.choose_path()
+
 
     # def step_bf(self):
     #     self.flood_fill()

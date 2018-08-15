@@ -242,6 +242,22 @@ class Mazesolver_GUI:
     #             self.mm.step_bf()
     #             self.print_mm()
 
+    def mm_step_draw_path(self):
+        nr_of_paths = len(self.mm.bf_paths)
+        print('There are {} paths'.format(nr_of_paths))
+
+        unique_paths = [list(x) for x in set(tuple(x) for x in self.mm.bf_paths)]
+        print('There are {} unique paths'.format(len(unique_paths)))
+
+        if  nr_of_paths > 1:
+            for path, i in zip(self.mm.bf_paths, range(len(self.mm.bf_paths))):
+                if i < len(self.line_colours):
+                    self.draw_path(path, colour=self.line_colours[i])
+                else:
+                    self.draw_path(path)
+        else:
+            self.draw_path(self.mm.bf_paths[0])
+
     def mm_step_bf(self):
         if self.mm.state == INSPECTION:
             self.mm.step_bf()
@@ -252,7 +268,8 @@ class Mazesolver_GUI:
             self.print_mm()
             self.mm_step_draw_known_walls()
 
-            # self.mm_step_draw_path()
+            self.delete_path()
+            self.mm_step_draw_path()
 
         if self.mm.state == RACE:
             print('c')
