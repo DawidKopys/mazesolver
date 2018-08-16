@@ -214,12 +214,14 @@ class Micromouse:
         old = self.bf_paths[:]
         self.bf_paths = [[]]
 
-        goal_cell_nr = self.find_entrance_to_finish()
+        goal_cell_nrs = self.find_entrance_to_finish()
 
         self.bf_paths[0].append(self.current_position)
 
-        while goal_cell_nr not in self.bf_paths[len(self.bf_paths)-1] or goal_cell_nr not in self.bf_paths[0]:
-            print('goal_cell_nr ({}) not in: \n{} \nor \n{}\n'.format(goal_cell_nr, self.bf_paths[len(self.bf_paths)-1], self.bf_paths[0]))
+        # while goal_cell_nr not in self.bf_paths[len(self.bf_paths)-1] or goal_cell_nr not in self.bf_paths[0]:
+        print('goal_cell_nrs: ', goal_cell_nrs)
+        while self.is_goal_in_paths(goal_cell_nrs) == False:
+            print('goal_cell_nr ({}) not in: \n{} \nor \n{}\n'.format(goal_cell_nrs, self.bf_paths[len(self.bf_paths)-1], self.bf_paths[0]))
             for path in self.bf_paths:
                 cell = path[len(path)-1]
                 cell_dist = self.bellman_ford_distance[cell]
@@ -250,6 +252,15 @@ class Micromouse:
         # for i in range(0, len(self.bf_paths)):
         #     print('self.bf_paths[{}] = {}'.format(i, self.bf_paths[i]))
 
+    def is_goal_in_paths(self, goal_list):
+        cond1 = [i for i in goal_list if i in self.bf_paths[len(self.bf_paths)-1]]
+        cond2 = [i for i in goal_list if i in self.bf_paths[0]]
+        if cond1 == [] or cond2 == []:
+            print('cond1 = {}, cond2 = {}'.format(cond1, cond2))
+            return False
+        else:
+            print('cond1 = {}, cond2 = {}'.format(cond1, cond2))
+            return True
 
     def create_bf_state_machines(self):
         self.bf_state_machines = [[]]
@@ -298,28 +309,34 @@ class Micromouse:
             cell[0:4] = cell2[0:4]
 
     def find_entrance_to_finish(self):
+        list_of_goal_cells = []
+
         cell = Micromouse.goal_cells_list[0]
         for side in [N, W]:
             if self.can_go_NSEW_bf(side, cell):
-                return cell
+                # return cell
+                list_of_goal_cells.append(cell)
 
         cell = Micromouse.goal_cells_list[1]
         for side in [S, W]:
             if self.can_go_NSEW_bf(side, cell):
-                return cell
+                # return cell
+                list_of_goal_cells.append(cell)
 
         cell = Micromouse.goal_cells_list[2]
         for side in [N, E]:
             if self.can_go_NSEW_bf(side, cell):
-                return cell
+                # return cell
+                list_of_goal_cells.append(cell)
 
         cell = Micromouse.goal_cells_list[3]
         for side in [S, E]:
             if self.can_go_NSEW_bf(side, cell):
-                return cell
+                # return cell
+                list_of_goal_cells.append(cell)
 
         # if we cant reach goal
-        return 0
+        return list(set(list_of_goal_cells))
 
     def is_maze_filled(self):
         if -1 not in self.bellman_ford_distance:
