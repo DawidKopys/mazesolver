@@ -246,14 +246,18 @@ class Mazesolver_GUI:
         if self.mm.state == INSPECTION:
             self.mm.step_bf()
 
-            self.delete_cell_numbers_bf()
-            self.print_cell_numbers_bf()
+            if self.mm.step_part == 1:
+                self.delete_cell_numbers_bf()
+                self.print_cell_numbers_bf()
 
-            self.print_mm()
-            self.mm_step_draw_known_walls(ALL)
+                self.mm_step_draw_known_walls(ALL)
+                self.mm.step_part = 2
+            elif self.mm.step_part == 2:
+                self.print_mm()
 
-            self.delete_path()
-            self.mm_step_draw_path()
+                self.delete_path()
+                self.mm_step_draw_path()
+                self.mm.step_part = 1
 
         if self.mm.state == RACE:
             print('c')

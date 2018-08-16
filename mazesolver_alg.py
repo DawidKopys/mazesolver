@@ -40,6 +40,8 @@ class Micromouse:
         for destination_cell in Micromouse.goal_cells_list:
             self.bellman_ford_distance[destination_cell] = 0
 
+        self.step_part = 1
+
     def add_wall(self, cell_number, side):
         side_nr = orientation_dict[side]
         self.mazelayout_mm[cell_number][side_nr] = 1
@@ -48,9 +50,17 @@ class Micromouse:
         for side in orientation_dict.values():
             if self.environment[self.current_position][side] == 1:
                 self.mazelayout_mm[self.current_position][side] = 1
+                self.update_cell_neighbour(side)
 
         self.mazelayout_mm[self.current_position][4] = 'visited'
         print('update_cell(): self.mazelayout_mm[self.current_position] = self.mazelayout_mm[{}] = {}'.format(self.current_position, self.mazelayout_mm[self.current_position]))
+
+    def update_cell_neighbour(self, side):
+        neigh_id = self.current_position + Micromouse.distance_dict[orientation_dict_rev[side]]
+        try:
+            self.mazelayout_mm[neigh_id][orientation_dict[Micromouse.go_back_dict[orientation_dict_rev[side]]]] = 1
+        except IndexError:
+            pass
 
     def step(self):
         try:
@@ -97,19 +107,23 @@ class Micromouse:
         self.bf_state_machine_index = 0
 
     def step_bf(self):
-        # wykryj ściany
-        self.update_cell()
+        if self.step_part == 1:
+            print('step1')
+            # wykryj ściany
+            self.update_cell()
 
-        # zalanie wodą
-        self.flood_fill()
+            # zalanie wodą
+            self.flood_fill()
+        elif self.step_part == 2:
+            print('step2')
+            # temp:
+            # wybor drogi
+            self.bf_find_path()
+            self.create_bf_state_machines()
+            self.choose_path()
 
-        # wybor drogi
-        self.bf_find_path()
-        self.create_bf_state_machines()
-        self.choose_path()
-
-        # ruch
-        self.bf_move()
+            # ruch
+            self.bf_move()
 
     def bf_move(self):
         print('move - {}'.format(self.bf_state_machines[self.path_chosen][0]))
@@ -148,24 +162,25 @@ class Micromouse:
         old = self.bellman_ford_distance[:]
         self.bellman_ford_distance = [-1]*(nr_of_cells**2)
 
-        if self.is_maze_filled() == False:
-            self.bellman_ford_distance = [-1]*(nr_of_cells**2)
-            self.bellman_ford_dist_counter = 0
-            self.bf_ends = Micromouse.goal_cells_list
-            for destination_cell in Micromouse.goal_cells_list:
-                self.bellman_ford_distance[destination_cell] = 0
+        # if self.is_maze_filled() == False:
+        # self.bellman_ford_distance = [-1]*(nr_of_cells**2)
+        self.bellman_ford_dist_counter = 0
+        self.bf_ends = Micromouse.goal_cells_list
+        for destination_cell in Micromouse.goal_cells_list:
+            self.bellman_ford_distance[destination_cell] = 0
 
-            while self.is_maze_filled() == False:
-                self.bellman_ford_dist_counter += 1
+        while self.is_maze_filled() == False:
+            self.bellman_ford_dist_counter += 1
 
-                new_bf_ends = []
-                for end in self.bf_ends:
-                    neighbours = self.find_neighbours_bf(end)
-                    for neigh in neighbours:
-                        self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
-                        new_bf_ends.append(neigh)
+            new_bf_ends = []
+            for end in self.bf_ends:
+                neighbours = self.find_neighbours_bf(end)
+                print('cell {} neighbours: {}'.format(end, neighbours) )
+                for neigh in neighbours:
+                    self.bellman_ford_distance[neigh] = self.bellman_ford_dist_counter
+                    new_bf_ends.append(neigh)
 
-                self.bf_ends = new_bf_ends
+            self.bf_ends = new_bf_ends
 
         if old != self.bellman_ford_distance:
             print('flood_fill(): old != curr')
@@ -204,10 +219,12 @@ class Micromouse:
         self.bf_paths[0].append(self.current_position)
 
         while goal_cell_nr not in self.bf_paths[len(self.bf_paths)-1] or goal_cell_nr not in self.bf_paths[0]:
+            print('goal_cell_nr ({}) not in: \n{} \nor \n{}\n'.format(goal_cell_nr, self.bf_paths[len(self.bf_paths)-1], self.bf_paths[0]))
             for path in self.bf_paths:
                 cell = path[len(path)-1]
                 cell_dist = self.bellman_ford_distance[cell]
                 cell_neighs = self.find_neighbours_bf(cell, ignore_cells_with_distance=False)
+                # print('cell_neighs: {}'.format(cell_neighs))
 
                 ways_to_go = []
                 for neigh in cell_neighs:
@@ -258,6 +275,8 @@ class Micromouse:
                         state_machine.append(self.turn_right)
                     elif Micromouse.left_turn_dict[curr_orient] == next_cell_dir:
                         state_machine.append(self.turn_left)
+                    elif Micromouse.go_back_dict[curr_orient] == next_cell_dir:
+                        state_machine.append(self.turn_back)
                     curr_orient = next_cell_dir
 
     def choose_path(self):
@@ -342,6 +361,8 @@ class Micromouse:
             if self.is_valid_cell_nr(neigh_nr):
                 if ignore_cells_with_distance == True:
                     if self.bellman_ford_distance[neigh_nr] == -1:
+                        if cell == 96 or cell == 97:
+                            print('cell {} can go W'.format(cell))
                         neighbours.append(neigh_nr)
                 else:
                     neighbours.append(neigh_nr)
@@ -351,12 +372,23 @@ class Micromouse:
     def can_go_NSEW_bf(self, side, cell=None):
         if cell == None:
             cell = self.current_position
+            pritnt('\n\nelooooo\n\n\n')
         if side not in orientation_dict.keys():
             print('error kurwa')
         else:
             if self.mazelayout_mm[cell][orientation_dict[side]] == 1:
+                if side == W:
+                    if cell == 96 or cell == 97:
+                        print('cell {} cant go W'.format(cell))
+                        print('self.mazelayout_mm[cell] = self.mazelayout_mm[{}] = {}'.format(cell, self.mazelayout_mm[cell]))
+                        print('self.mazelayout_mm[cell][orientation_dict[side]] = self.mazelayout_mm[{}][orientation_dict[{}] = self.mazelayout_mm[{}][{}] = {}'.format(cell, side, cell, orientation_dict[side], self.mazelayout_mm[cell][orientation_dict[side]]))
                 return False
             else:
+                if side == W:
+                    if cell == 96 or cell == 97:
+                        print('cell {} can go W'.format(cell))
+                        print('self.mazelayout_mm[cell] = self.mazelayout_mm[{}] = {}'.format(cell, self.mazelayout_mm[cell]))
+                        print('self.mazelayout_mm[cell][orientation_dict[side]] = self.mazelayout_mm[{}][orientation_dict[{}] = self.mazelayout_mm[{}][{}] = {}'.format(cell, side, cell, orientation_dict[side], self.mazelayout_mm[cell][orientation_dict[side]]))
                 return True
 
     def is_valid_cell_nr(self, cell_nr):

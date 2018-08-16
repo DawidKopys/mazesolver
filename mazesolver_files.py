@@ -1,6 +1,7 @@
 from tkinter import *
 
 orientation_dict = {N:0, E:1, S:2, W:3}
+orientation_dict_rev = {0:N, 1:E, 2:S, 3:W}
 nr_of_cells = 16
 edge_list_S = [nr_of_cells*i for i in range(1, nr_of_cells+1)]
 edge_list_N = [i-(nr_of_cells-1) for i in edge_list_S]
