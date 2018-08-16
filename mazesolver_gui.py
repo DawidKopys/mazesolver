@@ -225,10 +225,10 @@ class Mazesolver_GUI:
 
     def mm_step_draw_path(self):
         nr_of_paths = len(self.mm.bf_paths)
-        print('There are {} paths'.format(nr_of_paths))
-
-        unique_paths = [list(x) for x in set(tuple(x) for x in self.mm.bf_paths)]
-        print('There are {} unique paths'.format(len(unique_paths)))
+        # print('There are {} paths'.format(nr_of_paths))
+        #
+        # unique_paths = [list(x) for x in set(tuple(x) for x in self.mm.bf_paths)]
+        # print('There are {} unique paths'.format(len(unique_paths)))
 
         if  nr_of_paths > 1:
             for path, i in zip(self.mm.bf_paths, range(len(self.mm.bf_paths))):
@@ -403,8 +403,6 @@ class Mazesolver_GUI:
 
     # print micromouse and create self.mm object
     def print_mm(self):
-        print('MM on cell: {}'.format(self.mm.current_position))
-
         if self.mm_polygon != None:
             self.canvas.delete(self.mm_polygon)
         # cell_coords = self.cel    ls_centres[0][0]
