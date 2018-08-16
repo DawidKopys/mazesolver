@@ -193,7 +193,7 @@ class Micromouse:
                         ways_to_go.append(neigh)
 
                 nr_of_paths = len(ways_to_go)
-                if nr_of_paths > 1 and len(self.bf_paths) < 50:
+                if nr_of_paths > 1 and len(self.bf_paths) < 8:
                     for i in range(1, nr_of_paths): #dla kazdej sciezki tworzymy nowa liste
                         new_path = path[:]
                         new_path.append(ways_to_go[i])

@@ -223,34 +223,38 @@ class Mazesolver_GUI:
         self.mm_step_draw_known_walls(ALL)
 
 
-    def mm_step_draw_path(self):
+    def mm_step_draw_path(self, only_chosen=True):
         nr_of_paths = len(self.mm.bf_paths)
         # print('There are {} paths'.format(nr_of_paths))
         #
         # unique_paths = [list(x) for x in set(tuple(x) for x in self.mm.bf_paths)]
         # print('There are {} unique paths'.format(len(unique_paths)))
 
-        if  nr_of_paths > 1:
-            for path, i in zip(self.mm.bf_paths, range(len(self.mm.bf_paths))):
-                if i < len(self.line_colours):
-                    self.draw_path(path, colour=self.line_colours[i])
-                else:
-                    self.draw_path(path)
-        else:
-            self.draw_path(self.mm.bf_paths[0])
+        if only_chosen == False:
+            if  nr_of_paths > 1:
+                for path, i in zip(self.mm.bf_paths, range(len(self.mm.bf_paths))):
+                    if i < len(self.line_colours):
+                        self.draw_path(path, colour=self.line_colours[i])
+                    else:
+                        self.draw_path(path)
+            else:
+                self.draw_path(self.mm.bf_paths[0])
 
         # draw chosen path (red)
         self.draw_path(self.mm.bf_paths[self.mm.path_chosen], colour='red')
 
     def mm_step_bf(self):
+        self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step_bf)
+        self.mm_step_timer.start()
+
         if self.mm.state == INSPECTION:
             self.mm.step_bf()
 
             if self.mm.step_part == 1:
-                self.delete_cell_numbers_bf()
-                self.print_cell_numbers_bf()
+                # self.delete_cell_numbers_bf()
+                # self.print_cell_numbers_bf()
 
-                self.mm_step_draw_known_walls(ALL)
+                # self.mm_step_draw_known_walls(ALL)
                 self.mm.step_part = 2
             elif self.mm.step_part == 2:
                 self.print_mm()
@@ -265,17 +269,21 @@ class Mazesolver_GUI:
             # to be continued...
 
     def mm_step(self):
-        if self.mm.goal_reached == False:
-            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
-            self.mm_step_timer.start()
-            self.mm.step()
-            self.print_mm()
-            self.mm_step_draw_known_walls()
+        if Micromouse.alg == 'B':
+            self.mm_step_bf_init()
+            self.mm_step_bf()
         else:
-            self.draw_path(self.mm.visited_cells)
-            self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
-            self.b_mm_solve_maze.state(['!disabled'])
-            self.b_pauze_mm.state(['disabled'])
+            if self.mm.goal_reached == False:
+                self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
+                self.mm_step_timer.start()
+                self.mm.step()
+                self.print_mm()
+                self.mm_step_draw_known_walls()
+            else:
+                self.draw_path(self.mm.visited_cells)
+                self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
+                self.b_mm_solve_maze.state(['!disabled'])
+                self.b_pauze_mm.state(['disabled'])
 
     def mm_step_draw_known_walls(self, position=None):
         if position == None:
