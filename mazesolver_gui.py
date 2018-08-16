@@ -241,32 +241,39 @@ class Mazesolver_GUI:
                 self.draw_path(self.mm.bf_paths[0])
 
         # draw chosen path (red)
-        self.draw_path(self.mm.bf_paths[self.mm.path_chosen], colour='red')
+        self.draw_path(self.mm.bf_paths[self.mm.path_chosen], colour='magenta')
 
     def mm_step_bf(self):
-        self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step_bf)
-        self.mm_step_timer.start()
+        if self.mm.goal_reached == False:
+            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step_bf)
+            self.mm_step_timer.start()
 
-        if self.mm.state == INSPECTION:
-            self.mm.step_bf()
+            if self.mm.state == INSPECTION:
+                self.mm.step_bf()
 
-            if self.mm.step_part == 1:
-                # self.delete_cell_numbers_bf()
-                # self.print_cell_numbers_bf()
+                if self.mm.step_part == 1:
+                    # self.delete_cell_numbers_bf()
+                    # self.print_cell_numbers_bf()
 
-                # self.mm_step_draw_known_walls(ALL)
-                self.mm.step_part = 2
-            elif self.mm.step_part == 2:
-                self.print_mm()
+                    # self.mm_step_draw_known_walls(ALL)
+                    self.mm.step_part = 2
+                elif self.mm.step_part == 2:
+                    self.delete_path()
+                    self.mm_step_draw_path()
 
-                self.delete_path()
-                self.mm_step_draw_path()
-                self.mm.step_part = 1
+                    self.mm.step_part = 3
+                elif self.mm.step_part == 3:
+                    self.print_mm()
 
-        if self.mm.state == RACE:
-            print('c')
-            self.draw_path(self.mm.bf_paths[0])
+                    self.mm.step_part = 1
+
+            if self.mm.state == RACE:
+                print('c')
+                self.draw_path(self.mm.bf_paths[0])
             # to be continued...
+        else:
+            self.delete_path()
+            self.draw_path(self.mm.visited_cells)
 
     def mm_step(self):
         if Micromouse.alg == 'B':

@@ -62,11 +62,8 @@ class Micromouse:
             pass
 
     def step(self):
-        try:
-            if self.visited_cells[len(self.visited_cells)-1] != self.current_position:
-                self.visited_cells.append(self.current_position)
-        except IndexError:
-            self.visited_cells.append(self.current_position)
+        self.update_visited_cells()
+
         if self.mazelayout_mm[self.current_position][4] == 'Not visited':
             self.update_cell()
         else:
@@ -105,8 +102,17 @@ class Micromouse:
         self.bf_state_machines = [[], []]
         self.bf_state_machine_index = 0
 
+    def update_visited_cells(self):
+        try:
+            if self.visited_cells[len(self.visited_cells)-1] != self.current_position:
+                self.visited_cells.append(self.current_position)
+        except IndexError:
+            self.visited_cells.append(self.current_position)
+
     def step_bf(self):
         if self.step_part == 1:
+            self.update_visited_cells()
+
             # wykryj ściany
             self.update_cell()
 
@@ -118,9 +124,12 @@ class Micromouse:
             self.bf_find_path()
             self.create_bf_state_machines()
             self.choose_path()
-
+        elif self.step_part == 3:
             # ruch
             self.bf_move()
+            self.is_goal_reached()
+
+
 
     def bf_move(self):
         self.bf_state_machines[self.path_chosen][0]()
