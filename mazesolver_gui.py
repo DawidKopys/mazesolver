@@ -210,7 +210,7 @@ class Mazesolver_GUI:
             self.cell_numbers_bf = [0]*(nr_of_cells**2)
 
     def mm_step_bf_init(self):
-        self.delete_cell_numbers()
+        # self.delete_cell_numbers()
         self.mm.fill_edges()
         self.b_bf_step.configure(command=self.mm_step_bf)
 
@@ -245,7 +245,7 @@ class Mazesolver_GUI:
 
     def mm_step_bf(self):
         if self.mm.goal_reached == False:
-            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step_bf)
+            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time*3, self.mm_step_bf)
             self.mm_step_timer.start()
 
             if self.mm.state == INSPECTION:
@@ -255,7 +255,7 @@ class Mazesolver_GUI:
                     # self.delete_cell_numbers_bf()
                     # self.print_cell_numbers_bf()
 
-                    # self.mm_step_draw_known_walls(ALL)
+                    self.mm_step_draw_known_walls()
                     self.mm.step_part = 2
                 elif self.mm.step_part == 2:
                     self.delete_path()

@@ -127,7 +127,8 @@ class Micromouse:
         elif self.step_part == 3:
             # ruch
             self.bf_move()
-            self.is_goal_reached()
+            if self.is_goal_reached() == True:
+                self.update_visited_cells()
 
 
 
