@@ -31,7 +31,6 @@ class Micromouse:
 
         self.bellman_ford_dist_counter = 0
         self.bellman_ford_distance = [-1]*(nr_of_cells**2)
-        self.bf_initialized = False
         self.bf_ends = Micromouse.goal_cells_list
         self.bf_maze_filled = False
         self.bf_paths = [[]]
@@ -92,15 +91,6 @@ class Micromouse:
                     self.go_forward()
                 elif self.can_go_back() == True:
                     self.turn_back()
-
-    def reset_bf(self):
-        self.bellman_ford_dist_counter = 0
-        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
-        self.bf_initialized = False
-        self.bf_maze_filled = False
-        self.bf_paths = [0, 0]
-        self.bf_state_machines = [[], []]
-        self.bf_state_machine_index = 0
 
     def update_visited_cells(self):
         try:
@@ -403,6 +393,19 @@ class Micromouse:
     # pass Mazesolver.mazelayout as an argument
     def read_environment(self, mazelayout):
         self.environment = [[cell[0], cell[1], cell[2], cell[3]] for cell in mazelayout]
+
+    def reset_bf(self):
+        self.bellman_ford_dist_counter = 0
+        self.bellman_ford_distance = [-1]*(nr_of_cells**2)
+        self.bf_ends = Micromouse.goal_cells_list
+        self.bf_maze_filled = False
+        self.bf_paths = [[]]
+        self.bf_state_machines = [[]]
+        self.bf_state_machine_index = 0
+        for destination_cell in Micromouse.goal_cells_list:
+            self.bellman_ford_distance[destination_cell] = 0
+
+        self.step_part = 1
 
     def reset(self):
         self.mazelayout_mm = [[0, 0, 0, 0, 'Not visited'] for i in range(nr_of_cells*nr_of_cells)]
