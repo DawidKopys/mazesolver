@@ -117,6 +117,7 @@ class Mazesolver_GUI:
         self.cb_algorithm = ttk.Combobox(self.menuframe, textvariable=self.algorithm_val, state='readonly')
         self.cb_algorithm['values'] = ['Left-hand Rule', 'Right-hand Rule', 'Bellman-Ford']
         self.cb_algorithm.current(2)
+        self.mm_step = self.mm_step_BF
 
         label_algorithm.grid(row=4, pady=2)
         self.cb_algorithm.grid(row=5, pady=4, padx=10)
@@ -143,10 +144,13 @@ class Mazesolver_GUI:
         self.cb_algorithm.select_clear()
         if choice == 'Left-hand Rule':
             Micromouse.alg = 'L'
+            self.mm_step = self.mm_step_R_L
         elif choice == 'Right-hand Rule':
             Micromouse.alg = 'R'
+            self.mm_step = self.mm_step_R_L
         elif choice == 'Bellman-Ford':
             Micromouse.alg = 'B'
+            self.mm_step = self.mm_step_BF
 
     def place_mm(self, *args):
         self.print_mm()
@@ -250,47 +254,45 @@ class Mazesolver_GUI:
 
             if self.mm.state == INSPECTION:
                 self.mm.step_bf()
-
                 if self.mm.step_part == 1:
                     # self.delete_cell_numbers_bf()
                     # self.print_cell_numbers_bf()
-
                     self.mm_step_draw_known_walls()
                     self.mm.step_part = 2
                 elif self.mm.step_part == 2:
                     self.delete_path()
                     self.mm_step_draw_path()
-
                     self.mm.step_part = 3
                 elif self.mm.step_part == 3:
                     self.print_mm()
-
                     self.mm.step_part = 1
 
             if self.mm.state == RACE:
-                print('c')
-                self.draw_path(self.mm.bf_paths[0])
-            # to be continued...
+                pass
+                # to be continued...
         else:
             self.delete_path()
             self.draw_path(self.mm.visited_cells)
+            self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
+            self.b_mm_solve_maze.state(['!disabled'])
+            self.b_pauze_mm.state(['disabled'])
 
-    def mm_step(self):
-        if Micromouse.alg == 'B':
-            self.mm_step_bf_init()
-            self.mm_step_bf()
+    def mm_step_R_L(self):
+        if self.mm.goal_reached == False:
+            self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step_R_L)
+            self.mm_step_timer.start()
+            self.mm.step()
+            self.print_mm()
+            self.mm_step_draw_known_walls()
         else:
-            if self.mm.goal_reached == False:
-                self.mm_step_timer = threading.Timer(Mazesolver_GUI.step_time, self.mm_step)
-                self.mm_step_timer.start()
-                self.mm.step()
-                self.print_mm()
-                self.mm_step_draw_known_walls()
-            else:
-                self.draw_path(self.mm.visited_cells)
-                self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
-                self.b_mm_solve_maze.state(['!disabled'])
-                self.b_pauze_mm.state(['disabled'])
+            self.draw_path(self.mm.visited_cells)
+            self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
+            self.b_mm_solve_maze.state(['!disabled'])
+            self.b_pauze_mm.state(['disabled'])
+
+    def mm_step_BF(self):
+        self.mm_step_bf_init()
+        self.mm_step_bf()
 
     def mm_step_draw_known_walls(self, position=None):
         if position == None:
@@ -334,8 +336,6 @@ class Mazesolver_GUI:
             self.mazelayout = prepare_maze_layout_list(self.walls_printed)
             self.mm.read_environment(self.mazelayout)
             self.enable_w_except(parent=self.menuframe)
-            if Micromouse.alg == 'B':
-                self.mm.bf_read_whole_maze()
 
     # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):
