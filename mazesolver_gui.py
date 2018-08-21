@@ -145,37 +145,52 @@ class Mazesolver_GUI:
 
         self.mm_lifted = False
 
+
+    def mouse_wheel(self, event):
+        if self.mm_lifted == True:
+            d = event.delta
+
+            if d >= 120:
+                curr_ind = orientation_dict[self.mm.current_orientation]
+                curr_ind = curr_ind + 1
+                if curr_ind == 4:
+                    curr_ind = 0
+                self.mm.current_orientation = orientation_dict_rev[curr_ind]
+                self.mm.start_orientation = self.mm.current_orientation
+            if d <= -120:
+                curr_ind = orientation_dict[self.mm.current_orientation]
+                curr_ind = curr_ind - 1
+                if curr_ind == -1:
+                    curr_ind = 3
+                self.mm.current_orientation = orientation_dict_rev[curr_ind]
+                self.mm.start_orientation = self.mm.current_orientation
+
+            self.print_mm([event.x, event.y])
+
     def motion_mm(self, event):
-        print('right button drag to %d,%d' % (event.x, event.y))
-        # self.canvas.coords(self.mm_polygon, event.x, event.y)
         self.print_mm([event.x, event.y])
 
     def lift_mm(self, event):
-        print('DO YOU EVEN LIFT')
         # check if the cursor is on the mm
         cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
         cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
         cell_ind = self.cells_centres_flat.index([cell_x, cell_y])
 
         if cell_ind == self.mm.current_position:
-            print('cell ind ({}) = self.mm.current_position ({})'.format(cell_ind, self.mm.current_position))
-            self.canvas.bind('<B1-motion_mm>', self.motion_mm)
+            self.canvas.bind('<B1-Motion>', self.motion_mm)
             self.mm_lifted = True
-        else:
-            print('cell ind ({}) != self.mm.current_position ({})'.format(cell_ind, self.mm.current_position))
 
     def drop_mm(self, event):
-        print('MICDROP')
         if self.mm_lifted == True:
             cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
             cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
             cell_ind = self.cells_centres_flat.index([cell_x, cell_y])
 
-            self.print_mm([cell_x, cell_y])
             self.mm.current_position = cell_ind
             self.mm.start_pos = cell_ind
+            self.print_mm()
 
-            self.canvas.unbind('<B1-motion_mm>')
+            self.canvas.unbind('<B1-Motion')
             self.mm_lifted = False
 
     def move_mm(self):
@@ -256,6 +271,7 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Return>', self.solve_maze)
         self.canvas.bind('<ButtonPress-1>', self.lift_mm)
         self.canvas.bind('<ButtonRelease-1>', self.drop_mm)
+        self.canvas.bind('<MouseWheel>', self.mouse_wheel)
 
     def solve_maze(self, *args):
         self.mm_step()
