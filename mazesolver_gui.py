@@ -25,8 +25,8 @@ class Mazesolver_GUI:
         self.parent_root = parent_root
 
         self.size        = 800
-        self.size_move_mm_dialog_y = 70
-        self.size_move_mm_dialog_x = 250
+        self.size_move_mm_dialog_y = 65
+        self.size_move_mm_dialog_x = 320
 
         self.offset      = 20
         self.grid_width  = 1
@@ -80,9 +80,9 @@ class Mazesolver_GUI:
         # self.menuframe.rowconfigure(0, weight=2)
 
         self.spaceframe1 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
-        self.spaceframe1.grid(column=0, row=6, sticky=E+W)
+        self.spaceframe1.grid(column=0, row=7, sticky=E+W)
         self.spaceframe2 = ttk.Frame(self.menuframe, padding="3 3 3 3", height=self.size/4)
-        self.spaceframe2.grid(column=0, row=11, sticky=S+E+W)
+        self.spaceframe2.grid(column=0, row=12, sticky=S+E+W)
 
         self.canvas = Canvas(self.mazeframe, width=self.size + 2*self.offset, height=self.size + 2*self.offset)
         self.canvas.configure(background='#d9dde2')
@@ -93,29 +93,29 @@ class Mazesolver_GUI:
 
         self.b_draw_maze      = ttk.Button(self.menuframe, text='Draw Maze', state=DISABLED, command=self.print_maze)
         self.b_open_maze_file = ttk.Button(self.menuframe, text='Load Maze Layout', command=self.load_maze_layout)
-        self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', command=self.clear_maze_layout)
-        self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', command=self.save_maze_layout)
-        self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', command=self.toggle_maze_edit)
+        self.b_clear_maze     = ttk.Button(self.menuframe, text='Clear Maze Layout', state=DISABLED, command=self.clear_maze_layout)
+        self.b_save_maze      = ttk.Button(self.menuframe, text='Save Maze Layout', state=DISABLED, command=self.save_maze_layout)
+        self.b_edit_maze      = ttk.Button(self.menuframe, text='Edit Maze', state=DISABLED, command=self.toggle_maze_edit)
         self.b_mm_solve_maze  = ttk.Button(self.menuframe, text='Solve The Maze', state=DISABLED, command=self.solve_maze)
         self.b_place_mm       = ttk.Button(self.menuframe, text='Place Micromouse', state=DISABLED, command=self.place_mm)
         self.b_pauze_mm       = ttk.Button(self.menuframe, text='Pauze', state=DISABLED, command=self.pauze_the_alg)
         self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf_init)
         self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
         self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.bf_teach_environment)
-        self.b_move_mm        = ttk.Button(self.menuframe, text='Move Micromouse', command=self.move_mm)
+        self.b_move_mm        = ttk.Button(self.menuframe, text='Move Micromouse', state=DISABLED, command=self.move_mm)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
         self.b_draw_maze.grid(column=0, row=2, sticky=E+W, pady=2)
         self.b_place_mm.grid(column=0, row=3, sticky=E+W, pady=2)
-        self.b_clear_maze.grid(column=0, row=7, sticky=E+W, pady=2)
-        self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
-        self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
-        self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
+        self.b_clear_maze.grid(column=0, row=8, sticky=E+W, pady=2)
+        self.b_edit_maze.grid(column=0, row=9, sticky=E+W, pady=2)
+        self.b_mm_solve_maze.grid(column=0, row=10, sticky=E+W, pady=2)
+        self.b_pauze_mm.grid(column=0, row=11, sticky=E+W, pady=2)
         # self.b_bf_step.grid(column=0, row=12, sticky=E+W, pady=2)
         # self.b_bf_delete_nrs.grid(column=0, row=13, sticky=E+W, pady=2)
         # self.b_teach_env.grid(column=0, row=14, sticky=E+W, pady=2)
-        self.b_move_mm.grid(column=0, row=15, sticky=E+W, pady=2)
+        self.b_move_mm.grid(column=0, row=4, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -124,8 +124,8 @@ class Mazesolver_GUI:
         self.cb_algorithm.current(2)
         self.mm_step = self.mm_step_BF
 
-        label_algorithm.grid(row=4, pady=2)
-        self.cb_algorithm.grid(row=5, pady=4, padx=10)
+        label_algorithm.grid(row=5, pady=2)
+        self.cb_algorithm.grid(row=6, pady=4, padx=10)
 
         self.cb_algorithm.bind('<<ComboboxSelected>>', self.change_alg)
 
@@ -159,32 +159,39 @@ class Mazesolver_GUI:
         self.move_mm_dialog.geometry('%dx%d+%d+%d' % (root_w, root_h, x, y))
         self.move_mm_dialog.resizable(FALSE,FALSE)
 
-        root.tk.eval('wm stackorder '+str(self.move_mm_dialog))
-        print(str(root.tk.eval('wm stackorder '+str(self.move_mm_dialog))))
-
         self.move_mm_dialog.protocol("WM_DELETE_WINDOW", self.on_move_mm_dialog_close)
+
+        def move_mm_local():
+            self.mm.current_position = int(start_position.get()) - 1
+            self.mm.start_pos = self.mm.current_position
+            self.mm.current_orientation = str(start_orientation.get()).lower()
+            self.mm.start_orientation = self.mm.current_orientation
+            self.print_mm()
 
         start_orientation = StringVar()
         start_position    = StringVar()
-        l_position     = ttk.Label(self.move_mm_dialog, text='Position:')
-        e_position     = ttk.Entry(self.move_mm_dialog, textvariable=start_position)
-        l_orientation  = ttk.Label(self.move_mm_dialog, text='Orientation:')
-        cb_orientation = ttk.Combobox(self.move_mm_dialog, textvariable=start_orientation, state='readonly')
+        f_move = ttk.Frame(self.move_mm_dialog, padding="5 5 5 5")
+        b_confirm      = ttk.Button(f_move, text='Confirm', command=move_mm_local)
+        l_position     = ttk.Label(f_move, text='Position:')
+        e_position     = ttk.Entry(f_move, textvariable=start_position)
+        l_orientation  = ttk.Label(f_move, text='Orientation:')
+        cb_orientation = ttk.Combobox(f_move, textvariable=start_orientation, state='readonly')
         cb_orientation['values'] = ['N', 'E', 'W', 'S']
         cb_orientation.current(2)
         cb_orientation.bind('<<ComboboxSelected>>', lambda x: cb_orientation.select_clear)
 
         l_position.grid(column=0, row=0, pady=2, sticky=W)
         l_orientation.grid(column=0, row=1, pady=2)
-        e_position.grid(column=1, row=0, pady=2)
+        e_position.grid(column=1, row=0, pady=2, padx=10)
         cb_orientation.grid(column=1, row=1, pady=4, padx=10)
-
+        b_confirm.grid(column=2, row=0, rowspan=2, sticky=N+S)
+        f_move.grid(column=0, row=0)
 
 
     def on_move_mm_dialog_close(self):
         self.move_mm_dialog.grab_release()
         self.move_mm_dialog.destroy()
-        print('yolyo')
+
 
     def change_alg(self, *args):
         choice = self.algorithm_val.get()
@@ -203,6 +210,7 @@ class Mazesolver_GUI:
         self.print_mm()
         self.mm.read_environment(self.mazelayout)
         self.b_mm_solve_maze.state(['!disabled'])
+        self.b_move_mm.state(['!disabled'])
         self.b_mm_solve_maze.focus()
         self.parent_root.bind('<Return>', self.solve_maze)
 
@@ -796,6 +804,9 @@ class Mazesolver_GUI:
             self.mazelayout = read_maze_layout(self.filename)
             if self.filename != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
                 self.b_draw_maze.state(['!disabled'])
+                self.b_edit_maze.state(['!disabled'])
+                self.b_clear_maze.state(['!disabled'])
+                self.b_save_maze.state(['!disabled'])
                 self.parent_root.bind('<Return>', self.print_maze)
                 self.b_draw_maze.focus()
         except ValueError:

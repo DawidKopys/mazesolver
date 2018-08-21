@@ -410,7 +410,7 @@ class Micromouse:
     def reset(self):
         self.mazelayout_mm = [[0, 0, 0, 0, 'Not visited'] for i in range(nr_of_cells*nr_of_cells)]
         self.current_position = self.start_pos
-        self.current_orientation =self.start_orientation
+        self.current_orientation = self.start_orientation
         self.visited_cells = []
         self.goal_reached = False
         self.reset_bf()
