@@ -1,4 +1,4 @@
-from tkinter import ttk, filedialog, font
+from tkinter import ttk, filedialog, font, messagebox
 from mazesolver_files import *
 from mazesolver_alg import Micromouse
 
@@ -162,11 +162,17 @@ class Mazesolver_GUI:
         self.move_mm_dialog.protocol("WM_DELETE_WINDOW", self.on_move_mm_dialog_close)
 
         def move_mm_local():
-            self.mm.current_position = int(start_position.get()) - 1
-            self.mm.start_pos = self.mm.current_position
-            self.mm.current_orientation = str(start_orientation.get()).lower()
-            self.mm.start_orientation = self.mm.current_orientation
-            self.print_mm()
+            cell_nr = int(start_position.get()) - 1
+            orientation = str(start_orientation.get()).lower()
+            if cell_nr >= 0 and cell_nr < nr_of_cells**2:
+                self.mm.current_position = cell_nr
+                self.mm.start_pos = cell_nr
+                self.mm.current_orientation = orientation
+                self.mm.start_orientation = orientation
+                self.print_mm()
+            else:
+                messagebox.showinfo(message='Cell values must be contained in the range (1:{})'.format(nr_of_cells**2))
+                e_position.focus()
 
         start_orientation = StringVar()
         start_position    = StringVar()
@@ -371,6 +377,8 @@ class Mazesolver_GUI:
             self.path_lines.append(self.canvas.create_line(path_coords[i][0], path_coords[i][1],
                                 path_coords[i+1][0], path_coords[i+1][1], fill=colour, width=self.walls_width/2))
 
+
+
     def toggle_maze_edit(self):
         if self.maze_edit_enable == False:
             # enable maze editing
@@ -379,6 +387,8 @@ class Mazesolver_GUI:
             self.canvas.bind('<Double-Button-1>', self.find_closest_cell)
             self.b_edit_maze.state(['pressed'])
             self.canvas.configure(background='white')
+            # save all enabled buttons in a list and disable all except edit maze button
+            self.enabled_buttons = get_enabled_widgets(all_children_type(self.parent_root, ttk.Button))
             self.disable_w_except(parent=self.menuframe, widget_exception=self.b_edit_maze)
         elif self.maze_edit_enable == True:
             # disable maze editing
@@ -390,7 +400,9 @@ class Mazesolver_GUI:
             #update Micromouse maze environment
             self.mazelayout = prepare_maze_layout_list(self.walls_printed)
             self.mm.read_environment(self.mazelayout)
-            self.enable_w_except(parent=self.menuframe)
+            # enable all widgets that were enabled before maze editing
+            enable_widgets(self.enabled_buttons)
+
 
     # funkcja znajduje komórkę na którą klikamy i rysuje/usuwa odpowiednie ściany
     def find_closest_cell(self, event):

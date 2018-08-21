@@ -27,7 +27,7 @@ def zerolistmaker(n):
     listofzeros = [0] * n
     return listofzeros
 
-def all_children (wid) :
+def all_children(wid):
     _list = wid.winfo_children()
 
     for item in _list :
@@ -35,6 +35,20 @@ def all_children (wid) :
             _list.extend(item.winfo_children())
 
     return _list
+
+def all_children_type(wid, type):
+    children = all_children(wid)
+    _list = [child for child in children if isinstance(child, type)]
+    return _list
+
+def get_enabled_widgets(list_of_widgets):
+    _list = [wid for wid in list_of_widgets if wid.instate(['!disabled'])]
+    return _list
+
+def enable_widgets(widgets):
+    for wid in widgets:
+        wid.state(['!disabled'])
+
 
 # function to convert Mazesolver.walls_printed to Mazesolver.mazelayout
 def prepare_maze_layout_list(maze_layout):
