@@ -143,6 +143,41 @@ class Mazesolver_GUI:
 
         self.bf_font = font.Font(size=14, weight='bold')
 
+        self.mm_lifted = False
+
+    def motion_mm(self, event):
+        print('right button drag to %d,%d' % (event.x, event.y))
+        # self.canvas.coords(self.mm_polygon, event.x, event.y)
+        self.print_mm([event.x, event.y])
+
+    def lift_mm(self, event):
+        print('DO YOU EVEN LIFT')
+        # check if the cursor is on the mm
+        cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
+        cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
+        cell_ind = self.cells_centres_flat.index([cell_x, cell_y])
+
+        if cell_ind == self.mm.current_position:
+            print('cell ind ({}) = self.mm.current_position ({})'.format(cell_ind, self.mm.current_position))
+            self.canvas.bind('<B1-motion_mm>', self.motion_mm)
+            self.mm_lifted = True
+        else:
+            print('cell ind ({}) != self.mm.current_position ({})'.format(cell_ind, self.mm.current_position))
+
+    def drop_mm(self, event):
+        print('MICDROP')
+        if self.mm_lifted == True:
+            cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
+            cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
+            cell_ind = self.cells_centres_flat.index([cell_x, cell_y])
+
+            self.print_mm([cell_x, cell_y])
+            self.mm.current_position = cell_ind
+            self.mm.start_pos = cell_ind
+
+            self.canvas.unbind('<B1-motion_mm>')
+            self.mm_lifted = False
+
     def move_mm(self):
         self.move_mm_dialog = Toplevel()
         self.move_mm_dialog.grab_set()
@@ -219,6 +254,8 @@ class Mazesolver_GUI:
         self.b_move_mm.state(['!disabled'])
         self.b_mm_solve_maze.focus()
         self.parent_root.bind('<Return>', self.solve_maze)
+        self.canvas.bind('<ButtonPress-1>', self.lift_mm)
+        self.canvas.bind('<ButtonRelease-1>', self.drop_mm)
 
     def solve_maze(self, *args):
         self.mm_step()
@@ -484,13 +521,15 @@ class Mazesolver_GUI:
         self.cells_centres_y = [cell[1] for cell in self.cells_centres_flat]
 
     # print micromouse and create self.mm object
-    def print_mm(self):
-        if self.mm_polygon != None:
-            self.canvas.delete(self.mm_polygon)
+    def print_mm(self, coords=None):
         # cell_coords = self.cel    ls_centres[0][0]
-        cell_coords = self.get_cell_coords(self.mm.current_position)
-        cell_x = cell_coords[0]
-        cell_y = cell_coords[1]
+        if coords == None:
+            cell_coords = self.get_cell_coords(self.mm.current_position)
+            cell_x = cell_coords[0]
+            cell_y = cell_coords[1]
+        else:
+            cell_x = coords[0]
+            cell_y = coords[1]
         size_corrector = self.step/16
         if self.mm.current_orientation == S:
             N_W_x = cell_x - self.step/4 + size_corrector
@@ -521,8 +560,12 @@ class Mazesolver_GUI:
             C_x = cell_x - self.step/4
             C_y = cell_y
 
-        self.mm_polygon = self.canvas.create_polygon(N_W_x, N_W_y,
+
+        if self.mm_polygon == None:
+            self.mm_polygon = self.canvas.create_polygon(N_W_x, N_W_y,
                             N_E_x, N_E_y, C_x, C_y, fill=self.mm_color)
+        else:
+            self.canvas.coords(self.mm_polygon, N_W_x, N_W_y, N_E_x, N_E_y, C_x, C_y)
 
     # funkcja rysująca numery wszystkich komórek
     # param:
@@ -832,6 +875,7 @@ class Mazesolver_GUI:
 
     def delete_mm_polygon(self):
         self.canvas.delete(self.mm_polygon)
+        self.mm_polygon = None
 
     def clear_maze_layout(self, *args):
         for cell in self.walls_printed:
