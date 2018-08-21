@@ -25,6 +25,8 @@ class Mazesolver_GUI:
         self.parent_root = parent_root
 
         self.size        = 800
+        self.size_move_mm_dialog_y = 70
+        self.size_move_mm_dialog_x = 250
 
         self.offset      = 20
         self.grid_width  = 1
@@ -58,6 +60,7 @@ class Mazesolver_GUI:
         # set the dimensions of the screen
         # and where it is placed
         parent_root.geometry('%dx%d+%d+%d' % (root_w, root_h, x, y))
+        parent_root.resizable(FALSE,FALSE)
 
         # root childs can stretch
         parent_root.columnconfigure(0, weight=3)
@@ -99,6 +102,7 @@ class Mazesolver_GUI:
         self.b_bf_step        = ttk.Button(self.menuframe, text='Bellman-Ford', command=self.mm_step_bf_init)
         self.b_bf_delete_nrs  = ttk.Button(self.menuframe, text='Clear BF nrs', command=self.delete_cell_numbers_bf)
         self.b_teach_env      = ttk.Button(self.menuframe, text='Teach environment', command=self.bf_teach_environment)
+        self.b_move_mm        = ttk.Button(self.menuframe, text='Move Micromouse', command=self.move_mm)
 
         self.b_open_maze_file.grid(column=0, row=0, sticky=N+E+W, pady=2)
         self.b_save_maze.grid(column=0, row=1, sticky=E+W, pady=2)
@@ -108,9 +112,10 @@ class Mazesolver_GUI:
         self.b_edit_maze.grid(column=0, row=8, sticky=E+W, pady=2)
         self.b_mm_solve_maze.grid(column=0, row=9, sticky=E+W, pady=2)
         self.b_pauze_mm.grid(column=0, row=10, sticky=E+W, pady=2)
-        self.b_bf_step.grid(column=0, row=12, sticky=E+W, pady=2)
-        self.b_bf_delete_nrs.grid(column=0, row=13, sticky=E+W, pady=2)
-        self.b_teach_env.grid(column=0, row=14, sticky=E+W, pady=2)
+        # self.b_bf_step.grid(column=0, row=12, sticky=E+W, pady=2)
+        # self.b_bf_delete_nrs.grid(column=0, row=13, sticky=E+W, pady=2)
+        # self.b_teach_env.grid(column=0, row=14, sticky=E+W, pady=2)
+        self.b_move_mm.grid(column=0, row=15, sticky=E+W, pady=2)
 
         self.algorithm_val = StringVar()
         label_algorithm = ttk.Label(self.menuframe, text='Choose algorithm:')
@@ -138,6 +143,48 @@ class Mazesolver_GUI:
 
         self.bf_font = font.Font(size=14, weight='bold')
 
+    def move_mm(self):
+        self.move_mm_dialog = Toplevel()
+        self.move_mm_dialog.grab_set()
+        self.move_mm_dialog.title('Move Micromouse')
+        root_w = self.size_move_mm_dialog_x
+        root_h = self.size_move_mm_dialog_y
+        screen_w = self.parent_root.winfo_screenwidth()
+        screen_h = self.parent_root.winfo_screenheight()
+        # calculate x and y coordinates for the Tk root window
+        x = (screen_w/2) - (root_w/2)
+        y = (screen_h/2) - (root_h/2)
+        # set the dimensions of the screen
+        # and where it is placed
+        self.move_mm_dialog.geometry('%dx%d+%d+%d' % (root_w, root_h, x, y))
+        self.move_mm_dialog.resizable(FALSE,FALSE)
+
+        root.tk.eval('wm stackorder '+str(self.move_mm_dialog))
+        print(str(root.tk.eval('wm stackorder '+str(self.move_mm_dialog))))
+
+        self.move_mm_dialog.protocol("WM_DELETE_WINDOW", self.on_move_mm_dialog_close)
+
+        start_orientation = StringVar()
+        start_position    = StringVar()
+        l_position     = ttk.Label(self.move_mm_dialog, text='Position:')
+        e_position     = ttk.Entry(self.move_mm_dialog, textvariable=start_position)
+        l_orientation  = ttk.Label(self.move_mm_dialog, text='Orientation:')
+        cb_orientation = ttk.Combobox(self.move_mm_dialog, textvariable=start_orientation, state='readonly')
+        cb_orientation['values'] = ['N', 'E', 'W', 'S']
+        cb_orientation.current(2)
+        cb_orientation.bind('<<ComboboxSelected>>', lambda x: cb_orientation.select_clear)
+
+        l_position.grid(column=0, row=0, pady=2, sticky=W)
+        l_orientation.grid(column=0, row=1, pady=2)
+        e_position.grid(column=1, row=0, pady=2)
+        cb_orientation.grid(column=1, row=1, pady=4, padx=10)
+
+
+
+    def on_move_mm_dialog_close(self):
+        self.move_mm_dialog.grab_release()
+        self.move_mm_dialog.destroy()
+        print('yolyo')
 
     def change_alg(self, *args):
         choice = self.algorithm_val.get()
@@ -779,7 +826,7 @@ class Mazesolver_GUI:
                 self.canvas.delete(wall)
 
     def save_maze_layout(self):
-        self.filename_write = filedialog.askopenfilename(initialdir = ".",title = "Select file",
+        self.filename_write = filedialog.asksaveasfilename(initialdir = ".",title = "Select file",
                                 filetypes = (("text files","*.txt"),("all files","*.*")))
         if self.filename_write != '': #sprawdz czy wybrano plik, wlacz pczycisk Draw Maze tylko jesli wybrano
             write_maze_layout(self.filename_write, prepare_maze_layout_list(self.walls_printed))
