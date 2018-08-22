@@ -182,6 +182,8 @@ class Mazesolver_GUI:
 
     def drop_mm(self, event):
         if self.mm_lifted == True:
+            self.canvas.unbind('<B1-Motion>')
+            self.mm_lifted = False
             cell_x = min(self.cells_centres_x, key=lambda x:abs(x-event.x))
             cell_y = min(self.cells_centres_y, key=lambda x:abs(x-event.y))
             cell_ind = self.cells_centres_flat.index([cell_x, cell_y])
@@ -190,8 +192,6 @@ class Mazesolver_GUI:
             self.mm.start_pos = cell_ind
             self.print_mm()
 
-            self.canvas.unbind('<B1-Motion')
-            self.mm_lifted = False
 
     def move_mm(self):
         self.move_mm_dialog = Toplevel()
