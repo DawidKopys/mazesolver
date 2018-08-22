@@ -147,7 +147,6 @@ class Mazesolver_GUI:
 
 
     def rotate_mm(self, event):
-        print('yolo')
         if self.mm_lifted == True:
             curr_ind = orientation_dict[self.mm.current_orientation]
             curr_ind = curr_ind + 1
@@ -260,12 +259,23 @@ class Mazesolver_GUI:
         self.b_move_mm.state(['!disabled'])
         self.b_mm_solve_maze.focus()
         self.parent_root.bind('<Return>', self.solve_maze)
-        self.canvas.bind('<ButtonPress-1>', self.lift_mm)
-        self.canvas.bind('<ButtonRelease-1>', self.drop_mm)
-        self.canvas.bind('<3>', self.rotate_mm)
+        self.enable_disable_drag_n_drop('enable')
+
+    def enable_disable_drag_n_drop(self, action):
+        if action == 'enable':
+            self.canvas.bind('<ButtonPress-1>', self.lift_mm)
+            self.canvas.bind('<ButtonRelease-1>', self.drop_mm)
+            self.canvas.bind('<3>', self.rotate_mm)
+        elif action == 'disable':
+            self.canvas.unbind('<3>')
+            self.canvas.unbind('<ButtonPress-1>')
+            self.canvas.unbind('<ButtonRelease-1>')
+        else:
+            print('error: enable_disable_drag_n_drop')
 
     def solve_maze(self, *args):
         self.mm_step()
+        self.enable_disable_drag_n_drop('disable')
         self.b_pauze_mm.state(['!disabled'])
         self.disable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
         self.b_pauze_mm.configure(text='Pauze', command=self.pauze_the_alg)
@@ -292,6 +302,7 @@ class Mazesolver_GUI:
         self.enable_w_except(parent=self.menuframe, widget_exception=self.b_pauze_mm)
         self.b_pauze_mm.state(['disabled'])
         self.delete_path()
+        self.enable_disable_drag_n_drop('enable')
 
     def disable_w_except(self, parent, widget_exception=None):
         children = all_children(parent)
@@ -381,6 +392,7 @@ class Mazesolver_GUI:
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
             self.b_mm_solve_maze.state(['!disabled'])
             self.b_pauze_mm.state(['disabled'])
+            self.enable_disable_drag_n_drop('enable')
 
     def mm_step_R_L(self):
         if self.mm.goal_reached == False:
@@ -394,6 +406,7 @@ class Mazesolver_GUI:
             self.b_mm_solve_maze.configure(text='Restart the Micromouse', command=self.mm_reset)
             self.b_mm_solve_maze.state(['!disabled'])
             self.b_pauze_mm.state(['disabled'])
+            self.enable_disable_drag_n_drop('enable')
 
     def mm_step_BF(self):
         self.mm_step_bf_init()
