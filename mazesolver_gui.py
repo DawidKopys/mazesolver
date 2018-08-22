@@ -146,24 +146,15 @@ class Mazesolver_GUI:
         self.mm_lifted = False
 
 
-    def mouse_wheel(self, event):
+    def rotate_mm(self, event):
+        print('yolo')
         if self.mm_lifted == True:
-            d = event.delta
-
-            if d >= 120:
-                curr_ind = orientation_dict[self.mm.current_orientation]
-                curr_ind = curr_ind + 1
-                if curr_ind == 4:
-                    curr_ind = 0
-                self.mm.current_orientation = orientation_dict_rev[curr_ind]
-                self.mm.start_orientation = self.mm.current_orientation
-            if d <= -120:
-                curr_ind = orientation_dict[self.mm.current_orientation]
-                curr_ind = curr_ind - 1
-                if curr_ind == -1:
-                    curr_ind = 3
-                self.mm.current_orientation = orientation_dict_rev[curr_ind]
-                self.mm.start_orientation = self.mm.current_orientation
+            curr_ind = orientation_dict[self.mm.current_orientation]
+            curr_ind = curr_ind + 1
+            if curr_ind == 4:
+                curr_ind = 0
+            self.mm.current_orientation = orientation_dict_rev[curr_ind]
+            self.mm.start_orientation = self.mm.current_orientation
 
             self.print_mm([event.x, event.y])
 
@@ -271,7 +262,7 @@ class Mazesolver_GUI:
         self.parent_root.bind('<Return>', self.solve_maze)
         self.canvas.bind('<ButtonPress-1>', self.lift_mm)
         self.canvas.bind('<ButtonRelease-1>', self.drop_mm)
-        self.canvas.bind('<MouseWheel>', self.mouse_wheel)
+        self.canvas.bind('<3>', self.rotate_mm)
 
     def solve_maze(self, *args):
         self.mm_step()
